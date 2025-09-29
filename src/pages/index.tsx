@@ -18,7 +18,7 @@ import Topik from "./home/chat/topik"
 import PostProfile from "./home/PostProfileScreen"
 import Setting from "./home/settings"
 import PreviewMedia from "./previewMedia"
-import EditProfile from "./home/profile/post-profile/editMyProfile"
+import EditProfile from "./home/EditMyProfileScreen"
 import MyGroup from "./home/list-contact/my-group"
 import MyFriends from "./home/list-contact/my-friends"
 import ConfirmFriends from "./home/list-contact/my-friends/confirm-friends"
@@ -31,11 +31,13 @@ import ChangeNumber from "./home/settings/change-number"
 import MediaChat from "./home/chat/media"
 import Notification from "./home/NotificationScreen"
 import Search from "./home/search"
+import DetailPost from "./home/DetailPostScreen"
 
 const Pages = {
     Search,
     Notification,
     MediaChat,
+    DetailPost,
     ChangeNumber,
     BlockHistory,
     HelpCenter,

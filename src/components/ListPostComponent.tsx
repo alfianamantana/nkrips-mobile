@@ -345,15 +345,14 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
                           <View className="w-4/12">
                             <Badge
                               onPress={() => {
-                                navigation.navigate("DetailChat", {
+                                navigation.navigate("DetailPost", {
                                   isComunity: false,
-                                  public_hash: dataPost.posting.otm_id_user.public_hash
+                                  public_hash: dataPost?.posting?.hash,
                                 })
                               }}
-                              icon={<Assets.IconMessageRed width={15} height={15} />}
                               backgroundColor="bg-Primary/Main/10"
                               textColor="text-Primary/Main"
-                              label="Hubungi"
+                              label="Lihat detail"
                             />
                           </View>
                         </View>
@@ -386,14 +385,21 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
               </View>
             </TouchableOpacity>
           </View>
-          <View className="pr-2">
-            <TouchableOpacity onPress={() => pressVote(VoteType.DOWN)} className="bg-gray-100 items-center justify-center rounded-lg w-[30px] h-[30px]">
-              <Assets.IconArrowDown width={15} height={15} />
+          <View className="pr-1">
+            <TouchableOpacity onPress={() => pressVote(VoteType.DOWN)} className="bg-gray-100 flex-row items-center justify-center rounded-lg h-[30px] min-w-[30px] px-3">
+              <View className="pr-1">
+                <Assets.IconArrowDown width={15} height={15} />
+              </View>
+
+              <View>
+                <Text className="font-satoshi text-black font-medium text-xs">
+                  {
+                    vote.downvote
+                  }
+                </Text>
+              </View>
             </TouchableOpacity>
           </View>
-          {/* <View className="pr-2">
-                        <Assets.IconShare width={20} height={20} />
-                    </View> */}
         </View>
 
         <TouchableOpacity onPress={() => setShowModalsComment(dataPost?.posting?.hash, true)} className="flex-1 flex-row items-center justify-end">

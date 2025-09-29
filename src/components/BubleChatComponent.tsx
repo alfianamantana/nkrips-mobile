@@ -7,7 +7,7 @@ import { downloadWithCheckPermissioin } from "../helpers/downloadFile"
 import moment from "moment-timezone"
 import { FC } from "react"
 import { ChatItem } from "../constants/interface"
-
+import { Linking } from "react-native";
 interface BubbleChatInterface {
   setShowMenuChatHold: () => void,
   setReplyMessage: (item: Message) => void,
@@ -46,6 +46,50 @@ const BubbleChat: FC<BubbleChatInterface> = ({
     } else {
       replyName = "User";
     }
+  }
+
+  function renderMessageText(text: string, navigation: any) {
+    // Regex global untuk semua link nkrips://post/{public_hash}
+    const regex = /\[Lihat detail barang\]\(nkrips:\/\/post\/([a-zA-Z0-9]+)\)/g;
+    let lastIndex = 0;
+    let result: any[] = [];
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      const public_hash = match[1];
+      // Teks sebelum link
+      if (match.index > lastIndex) {
+        result.push(
+          <Text key={`before-${match.index}`}>
+            {text.substring(lastIndex, match.index)}
+          </Text>
+        );
+      }
+      // Link yang bisa di-tap
+      result.push(
+        <Text
+          key={`link-${public_hash}-${match.index}`}
+          className="text-blue-600 underline"
+          onPress={() => navigation.navigate("DetailPost", { public_hash })}
+        >
+          Lihat detail barang
+        </Text>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+    // Teks setelah link terakhir
+    if (lastIndex < text.length) {
+      result.push(
+        <Text key={`after-${lastIndex}`}>
+          {text.substring(lastIndex)}
+        </Text>
+      );
+    }
+    // Jika tidak ada link, tampilkan biasa
+    if (result.length === 0) {
+      return <Text>{text}</Text>;
+    }
+    return <Text>{result}</Text>;
   }
 
   const replyAttachments = item?.message_reply_to?.list_attachment || [];
@@ -193,9 +237,8 @@ const BubbleChat: FC<BubbleChatInterface> = ({
             }
             <View>
               <Text className="font-satoshi text-black">
-                {item?.message?.data}
+                {renderMessageText(item.message.data, navigation)}
               </Text>
-
             </View>
             <View className="flex flex-row-reverse">
               <View className="flex flex-row mt-2 gap-x-2">

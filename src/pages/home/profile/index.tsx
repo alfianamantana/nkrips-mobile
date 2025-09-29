@@ -339,7 +339,7 @@ const Profile: FC<ProfileInterface> = ({ navigation, route }) => {
                     </TouchableOpacity>
                 }
 
-                <View className="bg-white p-4 my-1">
+                {/* <View className="bg-white p-4 my-1">
                     <View className="mb-2">
                         {
                             isGroup ?
@@ -472,7 +472,7 @@ const Profile: FC<ProfileInterface> = ({ navigation, route }) => {
                                 </View>
                             </>
                     }
-                </View>
+                </View> */}
 
                 {
                     !isGroup &&

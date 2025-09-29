@@ -13,6 +13,8 @@ import PengajuanSayaScreen from "../pages/home/settings/register-jadab/pengajuan
 import RegisterBusiness from '../pages/home/register-business'
 import DetailBusiness from '../pages/home/settings/register-jadab/detail'
 import PayJadab from '../pages/home/settings/register-jadab/pay'
+import { StatusBar } from "react-native";
+import { useSafeAreaInsets, SafeAreaProvider } from 'react-native-safe-area-context';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +22,15 @@ export type RootStackParamList = {
     PostProfile: { username: string, isMyProfile?: boolean };
     DetailChat: { public_hash: string, isComunity?: boolean };
 };
+
+
+const App = () => {
+    return (
+        <SafeAreaProvider>
+            <RouteApps />
+        </SafeAreaProvider>
+    );
+}
 
 const RouteApps = () => {
     const [keywordsSearchChat, setKeywordsSearchChat] = useState("")
@@ -43,6 +54,7 @@ const RouteApps = () => {
 
     return (
         <NavigationContainer>
+            <StatusBar barStyle="dark-content" backgroundColor="#fff" />
             <Stack.Navigator
                 initialRouteName="ListChat"
                 screenOptions={{
@@ -197,6 +209,12 @@ const RouteApps = () => {
                         headerShadowVisible: false
                     })}
                 />
+
+                <Stack.Screen
+                    name="DetailPost"
+                    component={Pages.DetailPost}
+                />
+
                 <Stack.Screen
                     name="ListContact"
                     component={Pages.ListContact}
@@ -766,6 +784,8 @@ const RouteApps = () => {
 }
 
 const TabNavigation = () => {
+    const insets = useSafeAreaInsets();
+
     const { setShowSideBar } = storeShowSideBar()
 
     return (
@@ -775,6 +795,13 @@ const TabNavigation = () => {
             <Tab.Screen
                 name="Chat"
                 component={Pages.ListChat}
+                screenOptions={{
+                    tabBarStyle: {
+                        minHeight: 65,
+                        paddingBottom: insets.bottom || 10, // gunakan insets.bottom
+                        paddingTop: 10,
+                    }
+                }}
                 options={({ navigation }) => ({
                     tabBarActiveTintColor: "#ED0226",
                     tabBarInactiveTintColor: "#C2C2C2",
@@ -815,7 +842,7 @@ const TabNavigation = () => {
                             {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
                                 <Assets.IconNotif width={20} height={20} />
                             </TouchableOpacity> */}
-                            <TouchableOpacity onPress={() => navigation.navigate("Search")} className="pr-4 justify-center items-center">
+                            <TouchableOpacity className="pr-4 justify-center items-center">
                                 <Assets.IconSearch width={20} height={20} />
                             </TouchableOpacity>
                         </View>
@@ -865,7 +892,7 @@ const TabNavigation = () => {
                             {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
                                 <Assets.IconNotif width={20} height={20} />
                             </TouchableOpacity> */}
-                            <TouchableOpacity onPress={() => navigation.navigate("Search")} className="pr-4 justify-center items-center">
+                            <TouchableOpacity className="pr-4 justify-center items-center">
                                 <Assets.IconSearch width={20} height={20} />
                             </TouchableOpacity>
                         </View>
@@ -915,7 +942,9 @@ const TabNavigation = () => {
                             {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
                                 <Assets.IconNotif width={20} height={20} />
                             </TouchableOpacity> */}
-                            <TouchableOpacity onPress={() => navigation.navigate("Search")} className="pr-4 justify-center items-center">
+                            <TouchableOpacity
+
+                                className="pr-4 justify-center items-center">
                                 <Assets.IconSearch width={20} height={20} />
                             </TouchableOpacity>
                         </View>
@@ -965,7 +994,7 @@ const TabNavigation = () => {
                             {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
                                 <Assets.IconNotif width={20} height={20} />
                             </TouchableOpacity> */}
-                            <TouchableOpacity onPress={() => navigation.navigate("Search")} className="pr-4 justify-center items-center">
+                            <TouchableOpacity className="pr-4 justify-center items-center">
                                 <Assets.IconSearch width={20} height={20} />
                             </TouchableOpacity>
                         </View>
@@ -1014,7 +1043,7 @@ const TabNavigation = () => {
                             <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
                                 <Assets.IconNotif width={20} height={20} />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => navigation.navigate("Search")} className="pr-4 justify-center items-center">
+                            <TouchableOpacity className="pr-4 justify-center items-center">
                                 <Assets.IconSearch width={20} height={20} />
                             </TouchableOpacity>
                         </View>
@@ -1025,4 +1054,4 @@ const TabNavigation = () => {
     )
 }
 
-export default RouteApps
+export default App

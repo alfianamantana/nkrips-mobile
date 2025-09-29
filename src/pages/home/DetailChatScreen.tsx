@@ -1,7 +1,7 @@
 import { Text, TouchableOpacity, View, Image, ToastAndroid, FlatList, RefreshControl, ActivityIndicator, Platform } from "react-native"
 import { FC, useCallback, useState, useRef, useEffect } from "react"
 import Components from "../../components"
-import { Dimensions, Animated } from "react-native";
+import { Dimensions, Animated, Linking } from "react-native";
 import Assets from "../../assets"
 import { storeShowMenuChat, storeShowMenuChatHold, storeUserChatDetail, storeUserGroupDetail } from "../../store"
 import { useFocusEffect } from "@react-navigation/native"
@@ -71,7 +71,6 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [menuHeightState, setMenuHeightState] = useState(menuHeight); // menuHeight default (misal 120)
 
-
   const startRecording = async () => {
     // Set up recording progress listener
     // Sound.addRecordBackListener((e: RecordBackType) => {
@@ -89,6 +88,13 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
     // Sound.removeRecordBackListener();
     // console.log('Recording stopped:', result);
   };
+
+  useEffect(() => {
+    // Jika ada parameter text dari navigasi, set ke TextInput
+    if (route.params?.text) {
+      setText(route.params.text);
+    }
+  }, [route.params?.text]);
 
   const sendAudioMessage = async () => {
     if (!recordedAudio) return;
