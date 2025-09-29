@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "732791260413",
+    "project_id": "spirkn-1",
+    "storage_bucket": "spirkn-1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:732791260413:android:a163943f05f5455da8aa94",
+        "android_client_info": {
+          "package_name": "com.nkrips_app_rev1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBH_5aFiF3l5SQ6IiFEl99sjsEw4_6jaJM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:732791260413:android:8fdcbee2bb813ef0a8aa94",
+        "android_client_info": {
+          "package_name": "com.nkrips_app_rev1.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBH_5aFiF3l5SQ6IiFEl99sjsEw4_6jaJM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
