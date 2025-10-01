@@ -206,13 +206,16 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
             </TouchableOpacity>
           </View>
         </View>
-        <TouchableOpacity onPress={() => setShowModalsComment({ public_hash, status: true })} className="flex-1 flex-row items-center justify-end">
+        <TouchableOpacity
+          disabled={showModalsComment.status}
+          onPress={() => setShowModalsComment({ public_hash, status: true })} className="flex-1 flex-row items-center justify-end">
           <Text className="text-neutral-600 text-sm">{post?.list_comment?.length} Komentar</Text>
           <View className="pl-2">
             <Assets.IconArrowBack style={{ transform: [{ rotate: "90deg" }] }} width={10} height={10} />
           </View>
         </TouchableOpacity>
       </View>
+
       {/* Modal komentar */}
       <Components.ModalsComment
         isShow={showModalsComment.status}

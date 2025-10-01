@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity, Platform, ToastAndroid } from "react-native"
 import { FC, Fragment, useEffect, useState } from "react"
-import ContainerModalsBottom from "../../modalsContainerBottom"
 import Button from "../../button"
 import Assets from "../../../assets"
 import ImagePicker from 'react-native-image-crop-picker';
@@ -8,6 +7,7 @@ import FormInput from "../../formInput"
 import { uploadFile } from "../../../helpers/uploadFile"
 import ModalsChoseImageFrom from "../modalsSelectImages"
 import Video from "react-native-video"
+import Components from "../.."
 
 interface ModalsPostVideoInterface {
     isShow: boolean,
@@ -101,7 +101,7 @@ const ModalsPostVideo: FC<ModalsPostVideoInterface> = ({ isShow, handleClose, on
     }, [isShow, loading])
 
     return (
-        <ContainerModalsBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
+        <Components.ModalContainerBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
             <View className="px-2 pt-4 pb-1">
                 <View>
                     {
@@ -157,7 +157,7 @@ const ModalsPostVideo: FC<ModalsPostVideoInterface> = ({ isShow, handleClose, on
                     fromFileExplorer={choseImageExplorer}
                 />
             }
-        </ContainerModalsBottom>
+        </Components.ModalContainerBottom>
     )
 }
 

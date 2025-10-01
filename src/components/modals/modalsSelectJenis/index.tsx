@@ -1,37 +1,37 @@
 import { FC, useState } from "react"
-import ContainerModalsBottom from "../../modalsContainerBottom"
 import { Text, TouchableOpacity, View, ScrollView } from "react-native"
 import RadioButton from "../../radioButton"
 import Button from "../../button"
+import Components from "../../index"
 
 interface ModalSelectJenisInterface {
-    isShow : boolean,
-    handleShowHideModals : () => void,
-    handleSelected : (value:number, label:string) => void
+    isShow: boolean,
+    handleShowHideModals: () => void,
+    handleSelected: (value: number, label: string) => void
 }
 
-const ModalsSelectJenis:FC<ModalSelectJenisInterface> = ({ isShow, handleShowHideModals, handleSelected}) => {
+const ModalsSelectJenis: FC<ModalSelectJenisInterface> = ({ isShow, handleShowHideModals, handleSelected }) => {
     const [activeData, setActiveData] = useState({ value: 0, label: "" })
     const listData = [
         {
-            label : "Baru",
-            value : 0
+            label: "Baru",
+            value: 0
         },
         {
-            label : "Bekas",
-            value : 1
+            label: "Bekas",
+            value: 1
         }
     ]
 
     return (
-        <ContainerModalsBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
+        <Components.ModalContainerBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
             <View>
                 <View className="flex-1">
                     <ScrollView showsVerticalScrollIndicator={false}>
                         {
                             listData.length > 0 &&
                             listData.map((e, i) => (
-                                <TouchableOpacity key={i} onPress={() => setActiveData({ value:e.value, label:e.label })} className="flex-row items-center my-2">
+                                <TouchableOpacity key={i} onPress={() => setActiveData({ value: e.value, label: e.label })} className="flex-row items-center my-2">
                                     <View>
                                         <RadioButton
                                             isChecked={activeData.value === e.value ? true : false}
@@ -54,7 +54,7 @@ const ModalsSelectJenis:FC<ModalSelectJenisInterface> = ({ isShow, handleShowHid
                     />
                 </View>
             </View>
-        </ContainerModalsBottom>
+        </Components.ModalContainerBottom>
     )
 }
 

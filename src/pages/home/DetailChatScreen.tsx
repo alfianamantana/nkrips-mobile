@@ -1,7 +1,7 @@
 import { Text, TouchableOpacity, View, Image, ToastAndroid, FlatList, RefreshControl, ActivityIndicator, Platform } from "react-native"
 import { FC, useCallback, useState, useRef, useEffect } from "react"
 import Components from "../../components"
-import { Dimensions, Animated, Linking } from "react-native";
+import { Dimensions, Animated, KeyboardAvoidingView } from "react-native";
 import Assets from "../../assets"
 import { storeShowMenuChat, storeShowMenuChatHold, storeUserChatDetail, storeUserGroupDetail } from "../../store"
 import { useFocusEffect } from "@react-navigation/native"
@@ -25,8 +25,6 @@ const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 const menuWidth = 160;
 const menuHeight = 120;
-
-
 
 const { theme } = resolveConfig(tailwindConfig)
 
@@ -70,6 +68,22 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [menuHeightState, setMenuHeightState] = useState(menuHeight); // menuHeight default (misal 120)
+
+  const handlePinMessage = async (duration: number) => {
+    if (pinMessage) {
+      try {
+        await postPinMessageRequest(
+          public_hash,
+          pinMessage.message.id,
+          duration
+        );
+        ToastAndroid.show("Pesan berhasil dipin!", ToastAndroid.SHORT);
+        listChat();
+      } catch (err) {
+        ToastAndroid.show("Gagal pin pesan!", ToastAndroid.SHORT);
+      }
+    }
+  };
 
   const startRecording = async () => {
     // Set up recording progress listener
@@ -719,7 +733,7 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
                 }}
               >
                 {action.icon}
-                <Text style={{ fontSize: 16 }}>{action.title}</Text>
+                <Text className="text-black" style={{ fontSize: 16 }}>{action.title}</Text>
               </TouchableOpacity>
             ))}
           </Animated.View>
@@ -908,324 +922,248 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
           }
         </View>
       </View>
-      <View className="bg-white pt-2 pb-3 px-4">
-        {
-          VideoSend.path !== "" &&
-          <View className="flex-row items-center">
-            <View className="flex-1">
-              <Video
-                source={{ uri: VideoSend.path }}
-                resizeMode="cover"
-                className="rounded-md w-[100px] h-[100px]"
-              />
-            </View>
-            <TouchableOpacity onPress={() => {
-              setVideoSend({
-                path: "",
-                mime: "",
-                name: ""
-              })
-            }}>
-              <Assets.IconTimes width={40} />
-            </TouchableOpacity>
-          </View>
-        }
 
-        {
-          imageSend.path !== "" &&
-          <View className="flex-row items-center">
-            <View className="flex-1">
-              <Image
-                source={{ uri: imageSend.path }}
-                width={100}
-                height={100}
-                className="rounded-md"
-              />
-            </View>
-            <TouchableOpacity onPress={() => {
-              setImageSend({
-                path: "",
-                base64: "",
-                mime: ""
-              })
-            }}>
-              <Assets.IconTimes width={40} />
-            </TouchableOpacity>
-          </View>
-        }
-
-        {
-          fileSend.path !== "" &&
-          <View className="flex-row items-center">
-            <View className="flex-1 py-2">
-              <Text numberOfLines={1} className="font-satoshi text-black font-medium">{fileSend.name}</Text>
-            </View>
-            <TouchableOpacity onPress={() => {
-              setFileSend({
-                path: "",
-                name: "",
-                mime: ""
-              })
-            }}>
-              <Assets.IconTimes width={40} />
-            </TouchableOpacity>
-          </View>
-        }
-
-        {replyMessage && (
-          <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2 mb-2">
-            <View className="flex-1">
-              <Text className="text-xs text-gray-500 mb-0.5">
-                Replying to: {replyMessage.message.otm_id_user_from?.id === myUser ? 'You' : replyMessage.message.otm_id_user_from?.name || 'User'}
-              </Text>
-              {/* Render gambar jika ada di list_attachment */}
-              {replyMessage.list_attachment && replyMessage.list_attachment.length > 0 && (
-                <View style={{ flexDirection: 'row', gap: 4, marginBottom: 2 }}>
-                  {replyMessage.list_attachment
-                    .filter(att => att.type === "IMAGE" && att.url)
-                    .map((img, idx) => (
-                      <Image
-                        key={img.id || idx}
-                        source={{ uri: img.url }}
-                        style={{ width: 40, height: 40, borderRadius: 6, marginRight: 4 }}
-                        resizeMode="cover"
-                      />
-                    ))}
-                </View>
-              )}
-              {/* Render text jika ada */}
-              {replyMessage.message.data ? (
-                <Text className="text-sm text-gray-800" numberOfLines={1}>
-                  {replyMessage.message.data}
-                </Text>
-              ) : null}
-            </View>
-            <TouchableOpacity onPress={() => setReplyMessage(null)}>
-              <Assets.IconTimes width={18} height={18} />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <View className="flex-row items-center">
-          <View className="flex-1">
-            <Components.FormInput
-              isMultiLine={true}
-              isBackground={true}
-              value={text}
-              onChange={setText}
-              placeholder="Ketik pesan"
-              customHeight={isEditing ? 80 : 40}
-              sufix={
-                <View className="flex flex-col gap-y-3">
-                  {
-                    !showChoseFile ?
-                      <TouchableOpacity onPress={() => setShowChoseFile(showChoseFile ? false : true)}>
-                        <Assets.IconFile width={20} height={20} />
-                      </TouchableOpacity>
-                      :
-                      <TouchableOpacity onPress={() => setShowChoseFile(showChoseFile ? false : true)}>
-                        <Assets.IconTimes width={20} height={20} />
-                      </TouchableOpacity>
-                  }
-                  {
-                    isEditing && (
-                      <TouchableOpacity
-                        className=""
-                        onPress={() => {
-                          setIsEditing(false);
-                          setEditMessage(null);
-                          setText("");
-                        }}
-                      >
-                        <Assets.IconTimes width={20} height={20} />
-                      </TouchableOpacity>
-                    )
-                  }
-
-                </View>
-              }
-            />
-
-          </View>
-          {isEditing ? (
-            <>
-
-              <TouchableOpacity
-                className="pl-3 items-end justify-center"
-                onPress={handleEditMessage}
-              >
-                <Assets.IconSend width={30} height={30} />
-
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <View className="bg-white pt-2 pb-3 px-4">
+          {
+            VideoSend.path !== "" &&
+            <View className="flex-row items-center">
+              <View className="flex-1">
+                <Video
+                  source={{ uri: VideoSend.path }}
+                  resizeMode="cover"
+                  className="rounded-md w-[100px] h-[100px]"
+                />
+              </View>
+              <TouchableOpacity onPress={() => {
+                setVideoSend({
+                  path: "",
+                  mime: "",
+                  name: ""
+                })
+              }}>
+                <Assets.IconTimes width={40} />
               </TouchableOpacity>
-            </>
-          ) : (
-            (
-              text && !showChoseFile ?
+            </View>
+          }
+
+          {
+            imageSend.path !== "" &&
+            <View className="flex-row items-center">
+              <View className="flex-1">
+                <Image
+                  source={{ uri: imageSend.path }}
+                  width={100}
+                  height={100}
+                  className="rounded-md"
+                />
+              </View>
+              <TouchableOpacity onPress={() => {
+                setImageSend({
+                  path: "",
+                  base64: "",
+                  mime: ""
+                })
+              }}>
+                <Assets.IconTimes width={40} />
+              </TouchableOpacity>
+            </View>
+          }
+
+          {
+            fileSend.path !== "" &&
+            <View className="flex-row items-center">
+              <View className="flex-1 py-2">
+                <Text numberOfLines={1} className="font-satoshi text-black font-medium">{fileSend.name}</Text>
+              </View>
+              <TouchableOpacity onPress={() => {
+                setFileSend({
+                  path: "",
+                  name: "",
+                  mime: ""
+                })
+              }}>
+                <Assets.IconTimes width={40} />
+              </TouchableOpacity>
+            </View>
+          }
+
+          {replyMessage && (
+            <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2 mb-2">
+              <View className="flex-1">
+                <Text className="text-xs text-gray-500 mb-0.5">
+                  Replying to: {replyMessage.message.otm_id_user_from?.id === myUser ? 'You' : replyMessage.message.otm_id_user_from?.name || 'User'}
+                </Text>
+                {/* Render gambar jika ada di list_attachment */}
+                {replyMessage.list_attachment && replyMessage.list_attachment.length > 0 && (
+                  <View style={{ flexDirection: 'row', gap: 4, marginBottom: 2 }}>
+                    {replyMessage.list_attachment
+                      .filter(att => att.type === "IMAGE" && att.url)
+                      .map((img, idx) => (
+                        <Image
+                          key={img.id || idx}
+                          source={{ uri: img.url }}
+                          style={{ width: 40, height: 40, borderRadius: 6, marginRight: 4 }}
+                          resizeMode="cover"
+                        />
+                      ))}
+                  </View>
+                )}
+                {/* Render text jika ada */}
+                {replyMessage.message.data ? (
+                  <Text className="text-sm text-gray-800" numberOfLines={1}>
+                    {replyMessage.message.data}
+                  </Text>
+                ) : null}
+              </View>
+              <TouchableOpacity onPress={() => setReplyMessage(null)}>
+                <Assets.IconTimes width={18} height={18} />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View className="flex-row items-center">
+            <View className="flex-1">
+              <Components.FormInput
+                isMultiLine={true}
+                isBackground={true}
+                value={text}
+                onChange={setText}
+                placeholder="Ketik pesan"
+                customHeight={isEditing ? 80 : 40}
+                sufix={
+                  <View className="flex flex-col gap-y-3">
+                    {
+                      !showChoseFile ?
+                        <TouchableOpacity onPress={() => setShowChoseFile(showChoseFile ? false : true)}>
+                          <Assets.IconFile width={20} height={20} />
+                        </TouchableOpacity>
+                        :
+                        <TouchableOpacity onPress={() => setShowChoseFile(showChoseFile ? false : true)}>
+                          <Assets.IconTimes width={20} height={20} />
+                        </TouchableOpacity>
+                    }
+                    {
+                      isEditing && (
+                        <TouchableOpacity
+                          className=""
+                          onPress={() => {
+                            setIsEditing(false);
+                            setEditMessage(null);
+                            setText("");
+                          }}
+                        >
+                          <Assets.IconTimes width={20} height={20} />
+                        </TouchableOpacity>
+                      )
+                    }
+
+                  </View>
+                }
+              />
+
+            </View>
+            {isEditing ? (
+              <>
+
                 <TouchableOpacity
                   className="pl-3 items-end justify-center"
-                  onPress={
-                    (fileSend.path !== "" || imageSend.path !== "" || VideoSend.path !== "") ?
-                      () => sendChat()
-                      :
-                      (text !== "" && text.match(/^\s+$/) === null) ?
+                  onPress={handleEditMessage}
+                >
+                  <Assets.IconSend width={30} height={30} />
+
+                </TouchableOpacity>
+              </>
+            ) : (
+              (
+                text && !showChoseFile ?
+                  <TouchableOpacity
+                    className="pl-3 items-end justify-center"
+                    onPress={
+                      (fileSend.path !== "" || imageSend.path !== "" || VideoSend.path !== "") ?
                         () => sendChat()
                         :
-                        () => { }
-                  }
-                >
-                  {
-                    loadingSendChat ?
-                      <ActivityIndicator color={theme?.colors!["Primary/Main"] as string} size={30} />
-                      :
-                      <Assets.IconSend width={30} height={30} />
-                  }
-                </TouchableOpacity>
-                :
-                <TouchableOpacity
-                  id="mic-button"
-                  className="pl-3 items-end justify-center"
-                  onPress={async () => {
-                    if (isRecording) {
-                      await stopRecording();
-                    } else {
-                      await startRecording();
+                        (text !== "" && text.match(/^\s+$/) === null) ?
+                          () => sendChat()
+                          :
+                          () => { }
                     }
-                  }}
-                >
-                  {isRecording ? (
-                    // SVG kotak (stop)
-                    <View style={{
-                      width: 30, height: 30, borderRadius: 15, backgroundColor: "#d32f2f", alignItems: "center", justifyContent: "center"
-                    }}>
-                      {/* SVG kotak */}
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <rect width="18" height="18" x="3" y="3" rx="2" fill="#fff" />
-                      </svg>
-                    </View>
-                  ) : (
-                    <Assets.IconMicOn width={30} height={30} />
-                  )}
-                </TouchableOpacity>
-            )
-          )}
-        </View>
-
-        {
-          showChoseFile &&
-          <View className="pt-5 pb-4 justify-center flex-row">
-            <TouchableOpacity onPress={() => choseImageCamera()} className="flex-1 justify-center items-center">
-              <Assets.IconCamera width={35} height={35} />
-              <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Kamera</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => choseImageExplorer()} className="flex-1 justify-center items-center">
-              <Assets.IconGallery width={35} height={35} />
-              <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Gallery</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => choseVideoExplorer()} className="flex-1 justify-center items-center">
-              <Assets.IconVideoBlack width={35} height={35} />
-              <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Video</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => handleChoseFile()} className="flex-1 justify-center items-center">
-              <Assets.IconDocument width={35} height={35} />
-              <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">File</Text>
-            </TouchableOpacity>
+                  >
+                    {
+                      loadingSendChat ?
+                        <ActivityIndicator color={theme?.colors!["Primary/Main"] as string} size={30} />
+                        :
+                        <Assets.IconSend width={30} height={30} />
+                    }
+                  </TouchableOpacity>
+                  :
+                  <TouchableOpacity
+                    id="mic-button"
+                    className="pl-3 items-end justify-center"
+                    onPress={async () => {
+                      if (isRecording) {
+                        await stopRecording();
+                      } else {
+                        await startRecording();
+                      }
+                    }}
+                  >
+                    {isRecording ? (
+                      // SVG kotak (stop)
+                      <View style={{
+                        width: 30, height: 30, borderRadius: 15, backgroundColor: "#d32f2f", alignItems: "center", justifyContent: "center"
+                      }}>
+                        {/* SVG kotak */}
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                          <rect width="18" height="18" x="3" y="3" rx="2" fill="#fff" />
+                        </svg>
+                      </View>
+                    ) : (
+                      <Assets.IconMicOn width={30} height={30} />
+                    )}
+                  </TouchableOpacity>
+              )
+            )}
           </View>
-        }
-      </View>
 
-      {/* modal pin  */}
-      <Modal
-        id="modalPinMessage"
+          {
+            showChoseFile &&
+            <View className="pt-5 pb-4 justify-center flex-row">
+              <TouchableOpacity onPress={() => choseImageCamera()} className="flex-1 justify-center items-center">
+                <Assets.IconCamera width={35} height={35} />
+                <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Kamera</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => choseImageExplorer()} className="flex-1 justify-center items-center">
+                <Assets.IconGallery width={35} height={35} />
+                <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Gallery</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => choseVideoExplorer()} className="flex-1 justify-center items-center">
+                <Assets.IconVideoBlack width={35} height={35} />
+                <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Video</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => handleChoseFile()} className="flex-1 justify-center items-center">
+                <Assets.IconDocument width={35} height={35} />
+                <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">File</Text>
+              </TouchableOpacity>
+            </View>
+          }
+        </View>
+      </KeyboardAvoidingView>
+
+      <Components.ModalPinMessage
         isVisible={showPinModal}
-        onBackdropPress={() => setShowPinModal(false)}
-        backdropOpacity={0.4}
-      >
-        <View style={{
-          backgroundColor: "#fff",
-          borderRadius: 20,
-          padding: 24,
-          alignItems: "flex-start"
-        }}>
-          <Text style={{
-            fontWeight: "bold",
-            fontSize: 22,
-            color: "#232B36",
-            marginBottom: 24,
-            alignSelf: "center"
-          }}>
-            Pilih Durasi Pin Pesan
-          </Text>
-          {[
-            { label: "24 Jam", value: 1 },
-            { label: "7 Hari", value: 7 },
-            { label: "30 Hari", value: 30 }
-          ].map(opt => (
-            <TouchableOpacity
-              key={opt.value}
-              style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}
-              onPress={() => setSelectedPinDuration(opt.value)}
-            >
-              <View style={{
-                width: 24, height: 24, borderRadius: 12,
-                borderWidth: 2, borderColor: "#d32f2f",
-                alignItems: "center", justifyContent: "center",
-                marginRight: 12
-              }}>
-                {selectedPinDuration === opt.value && (
-                  <View style={{
-                    width: 12, height: 12, borderRadius: 6,
-                    backgroundColor: "#d32f2f"
-                  }} />
-                )}
-              </View>
-              <Text style={{ fontSize: 18, color: "#232B36" }}>{opt.label}</Text>
-            </TouchableOpacity>
-          ))}
-          <View style={{ flexDirection: "row", alignSelf: "flex-end", marginTop: 8 }}>
-            <TouchableOpacity
-              style={{
-                backgroundColor: "#F3F4F6",
-                borderRadius: 8,
-                paddingVertical: 10,
-                paddingHorizontal: 24,
-                marginRight: 12
-              }}
-              onPress={() => setShowPinModal(false)}
-            >
-              <Text style={{ color: "#232B36", fontWeight: "500", fontSize: 16 }}>Batal</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                backgroundColor: "#d32f2f",
-                borderRadius: 8,
-                paddingVertical: 10,
-                paddingHorizontal: 24
-              }}
-              onPress={async () => {
-                if (pinMessage) {
-                  try {
-                    await postPinMessageRequest(
-                      public_hash,
-                      pinMessage.message.id,
-                      selectedPinDuration
-                    );
-                    ToastAndroid.show("Pesan berhasil dipin!", ToastAndroid.SHORT);
-                    listChat();
-                  } catch (err) {
-                    ToastAndroid.show("Gagal pin pesan!", ToastAndroid.SHORT);
-                  }
-                }
-                setShowPinModal(false);
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "500", fontSize: 16 }}>Pin Pesan</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowPinModal(false)}
+        onPin={handlePinMessage}
+        pinMessage={pinMessage}
+        selectedPinDuration={selectedPinDuration}
+        setSelectedPinDuration={setSelectedPinDuration}
+      />
 
       <Modal
         isVisible={showEditModal}

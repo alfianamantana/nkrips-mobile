@@ -1,14 +1,12 @@
 import { View, Text, TouchableOpacity, Platform, ToastAndroid, ScrollView, Image } from "react-native"
-import { FC, useEffect, useState } from "react"
-import ContainerModalsBottom from "../modalsContainerBottom"
+import { Component, FC, useEffect, useState } from "react"
 import Button from "../button"
 import Assets from "../../assets"
 import ImagePicker from 'react-native-image-crop-picker';
 import FormInput from "../formInput"
 import { uploadFile } from "../../helpers/uploadFile"
 import ModalsChoseImageFrom from "./modalsSelectImages"
-import ModalsSelectJenis from "./modalsSelectJenis"
-import ModalsSelectCategory from "./modalsSelectCategory"
+import Components from "../index"
 
 interface ModalsPostProductInterface {
   isShow: boolean,
@@ -19,7 +17,7 @@ interface ModalsPostProductInterface {
 
 const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose, onPost, loading }) => {
   const [selectedPhoto, setSelectedPhoto] = useState<Array<{ image_url: "" }>>([])
-  const [selectedJenis, setSelectedJenis] = useState({ value: 0, label: "Baru" })
+  const [selectedJenis, setSelectedJenis] = useState({ value: 0, label: "" })
   const [selectedCategory, setSelectedCategory] = useState({ value: 0, label: "" })
   const [namaProduk, setnamaProduk] = useState("")
   const [kategori, setkategori] = useState("")
@@ -105,6 +103,19 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
   }
 
   const postProduct = async () => {
+    if (
+      !namaProduk.trim() ||
+      !selectedCategory.value ||
+      !selectedJenis.value ||
+      !desc.trim() ||
+      !price.trim() ||
+      !location.trim() ||
+      !kuantitas.trim() ||
+      selectedPhoto.length === 0
+    ) {
+      ToastAndroid.show("Semua data harus diisi!", ToastAndroid.SHORT)
+      return;
+    }
     if (selectedPhoto.length > 0) {
       let data = {
         name: namaProduk,
@@ -118,13 +129,23 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
       }
 
       onPost(selectedPhoto, data)
+      setSelectedCategory({ value: 0, label: "" })
+      setSelectedJenis({ value: 0, label: "" })
+      setkategori("")
+      setjenis("")
+      setnamaProduk("")
+      setdesc("")
+      setprice("")
+      setlocation("")
+      setkuantitas("")
+      setSelectedPhoto([])
     } else {
       ToastAndroid.show("Foto tidak boleh kosong !", ToastAndroid.SHORT)
     }
   }
 
   return (
-    <ContainerModalsBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
+    <Components.ModalContainerBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
       <View className="px-2 pt-4 pb-1 h-[70vh]">
         <View className="flex-1">
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -264,7 +285,7 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
       }
 
       {/* modals jenis */}
-      <ModalsSelectJenis
+      <Components.ModalsSelectJenis
         isShow={showSelectJenis}
         handleShowHideModals={() => {
           setShowSelectJenis(!showSelectJenis)
@@ -279,7 +300,7 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
       />
 
       {/* modals kategori */}
-      <ModalsSelectCategory
+      <Components.ModalsSelectCategory
         isShow={showSelectCategory}
         handleShowHideModals={() => {
           setShowSelectCategory(!showSelectCategory)
@@ -292,7 +313,7 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
           setShowSelectCategory(false)
         }}
       />
-    </ContainerModalsBottom>
+    </Components.ModalContainerBottom>
   )
 }
 

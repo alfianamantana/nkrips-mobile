@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity, Image, ToastAndroid, FlatList, RefreshControl, ActivityIndicator, TouchableWithoutFeedback } from "react-native"
 import { FC, Fragment, useEffect, useState } from "react"
-import ContainerModalsBottom from "../modalsContainerBottom"
 import FormInput from "../formInput"
 import Assets from "../../assets"
 import { listCommentRequest, postCommentRequest } from "../../services/home/posting"
@@ -8,6 +7,7 @@ import { Comment } from "@pn/watch-is/model"
 import moment from "moment-timezone"
 import resolveConfig from 'tailwindcss/resolveConfig'
 import tailwindConfig from "../../../tailwind.config"
+import Components from "../index"
 
 const { theme } = resolveConfig(tailwindConfig)
 
@@ -84,7 +84,7 @@ const ModalsComment: FC<ModalsCommentInterface> = ({ isShow, handleClose, hash }
   }, [isShow])
 
   return (
-    <ContainerModalsBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
+    <Components.ModalContainerBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
       <View className="pb-1 h-[70vh]">
         <View>
           <Text className="font-satoshi text-black font-medium">
@@ -172,7 +172,7 @@ const ModalsComment: FC<ModalsCommentInterface> = ({ isShow, handleClose, hash }
           </TouchableOpacity>
         </View>
       </View>
-    </ContainerModalsBottom>
+    </Components.ModalContainerBottom>
   )
 }
 

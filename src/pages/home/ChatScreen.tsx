@@ -163,7 +163,7 @@ const ListChat: FC<ListChatInterface> = ({ navigation }) => {
 
       </View>
       <View className="items-end justify-end absolute bottom-[20px] right-[20px]">
-        <TouchableOpacity onPress={() => navigation.navigate("ListContact")}>
+        <TouchableOpacity onPress={() => navigation.navigate("PesanBaru")}>
           <Assets.ImageNewMessage width={70} height={70} />
         </TouchableOpacity>
       </View>

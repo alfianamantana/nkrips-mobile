@@ -1,5 +1,4 @@
 import { FC, useEffect, useState } from "react"
-import ContainerModalsBottom from "../../modalsContainerBottom"
 import { Text, TouchableOpacity, View, ScrollView, ToastAndroid } from "react-native"
 import RadioButton from "../../radioButton"
 import Button from "../../button"
@@ -7,6 +6,7 @@ import { kabRequest } from "../../../services/adm"
 import { Schema } from "@pn/watch-is/driver"
 import FormInput from "../../formInput"
 import LoadMore from "../../loadMore"
+import Components from "../.."
 
 interface ModalsKabupatenInterface {
     isShow: boolean,
@@ -69,7 +69,7 @@ const ModalsKabupaten: FC<ModalsKabupatenInterface> = ({ isShow, handleShowHideM
     }, [keywords])
 
     return (
-        <ContainerModalsBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
+        <Components.ModalContainerBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
             <View className="h-[50vh]">
                 <View className="mb-3">
                     <FormInput
@@ -120,7 +120,7 @@ const ModalsKabupaten: FC<ModalsKabupatenInterface> = ({ isShow, handleShowHideM
                     />
                 </View>
             </View>
-        </ContainerModalsBottom>
+        </Components.ModalContainerBottom>
     )
 }
 

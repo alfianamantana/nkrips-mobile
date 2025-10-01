@@ -214,6 +214,10 @@ const RouteApps = () => {
                     name="DetailPost"
                     component={Pages.DetailPost}
                 />
+                <Stack.Screen
+                    name="PesanBaru"
+                    component={Pages.PesanBaru}
+                />
 
                 <Stack.Screen
                     name="ListContact"
@@ -791,17 +795,18 @@ const TabNavigation = () => {
     return (
         <Tab.Navigator
             initialRouteName="Chat"
+            screenOptions={{
+                tabBarStyle: {
+                    minHeight: 65,
+                    paddingBottom: insets.bottom || 10, // gunakan insets.bottom
+                    paddingTop: 10,
+                }
+            }}
         >
             <Tab.Screen
                 name="Chat"
                 component={Pages.ListChat}
-                screenOptions={{
-                    tabBarStyle: {
-                        minHeight: 65,
-                        paddingBottom: insets.bottom || 10, // gunakan insets.bottom
-                        paddingTop: 10,
-                    }
-                }}
+
                 options={({ navigation }) => ({
                     tabBarActiveTintColor: "#ED0226",
                     tabBarInactiveTintColor: "#C2C2C2",
@@ -816,11 +821,6 @@ const TabNavigation = () => {
                     tabBarLabelStyle: {
                         fontFamily: "Satoshi",
                         fontWeight: "500"
-                    },
-                    tabBarStyle: {
-                        minHeight: 65,
-                        paddingBottom: 10,
-                        paddingTop: 10
                     },
                     tabBarIcon: ({ focused }) => (
                         <Fragment>
@@ -867,11 +867,7 @@ const TabNavigation = () => {
                         fontFamily: "Satoshi",
                         fontWeight: "500"
                     },
-                    tabBarStyle: {
-                        minHeight: 65,
-                        paddingBottom: 10,
-                        paddingTop: 10
-                    },
+
                     tabBarIcon: ({ focused }) => (
                         <Fragment>
                             {
@@ -917,11 +913,7 @@ const TabNavigation = () => {
                         fontFamily: "Satoshi",
                         fontWeight: "500"
                     },
-                    tabBarStyle: {
-                        minHeight: 65,
-                        paddingBottom: 10,
-                        paddingTop: 10
-                    },
+
                     tabBarIcon: ({ focused }) => (
                         <Fragment>
                             {
@@ -969,11 +961,6 @@ const TabNavigation = () => {
                         fontFamily: "Satoshi",
                         fontWeight: "500"
                     },
-                    tabBarStyle: {
-                        minHeight: 65,
-                        paddingBottom: 10,
-                        paddingTop: 10
-                    },
                     tabBarIcon: ({ focused }) => (
                         <Fragment>
                             {
@@ -1017,11 +1004,6 @@ const TabNavigation = () => {
                     tabBarLabelStyle: {
                         fontFamily: "Satoshi",
                         fontWeight: "500"
-                    },
-                    tabBarStyle: {
-                        minHeight: 65,
-                        paddingBottom: 10,
-                        paddingTop: 10
                     },
                     tabBarIcon: ({ focused }) => (
                         <Fragment>

@@ -25,20 +25,24 @@ const ListContact: FC<ListContactInterface> = ({ navigation }) => {
 
         } catch (error) {
             ToastAndroid.show("Gagal menampilkan daftar kontak !", ToastAndroid.SHORT)
-
         } finally {
             setLoading(false)
         }
     }
 
     const searchFriends = async (keywords = "") => {
+        if (!keywords || keywords.trim() === "") {
+            return;
+        }
         setLoading(true)
         try {
             const list = await listContactPhoneNumberSearchRequest(keywords)
-            // setListContactData(list.data)
-            // setTotalFriend(list.total)
+            setListContactData(list.data)
+            setTotalFriend(list.total)
 
         } catch (error) {
+            console.log(error.response, '??????s');
+
             ToastAndroid.show("Gagal menampilkan daftar kontak !", ToastAndroid.SHORT)
 
         } finally {
@@ -53,7 +57,7 @@ const ListContact: FC<ListContactInterface> = ({ navigation }) => {
     // search debounce
     useEffect(() => {
         const debounce = setTimeout(() => {
-            // searchFriends(keywords)
+            searchFriends(keywords)
         }, 500)
 
         return () => {

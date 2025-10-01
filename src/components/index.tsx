@@ -20,14 +20,18 @@ import ModalsPostPhoto from "./modals/modalsPostPhoto"
 import ModalsPostProduct from "./modals/ModalsPostProduct"
 import ModalsPostVideo from "./modals/modalsPostVideo"
 import ModalsProvince from "./modals/modalsProvince"
-import ModalsSelectCategory from "./modals/modalsSelectCategory"
+import ModalsSelectCategory from "./modals/ModalSelectCategory"
 import ModalsChoseImageFrom from "./modals/modalsSelectImages"
+import ModalContainerBottom from './modals/ModalContainerBottom'
 import ModalsSelectJenis from "./modals/modalsSelectJenis"
+import ModalPinMessage from "./modals/ModalPinMessage"
 import RadioButton from "./radioButton"
-import SideBar from "./sideBar"
+import SideBar from "./SidebarComponent"
 import Tabs from "./tabs"
 
 const Components = {
+    ModalContainerBottom,
+    ModalPinMessage,
     ModalsSelectCategory,
     ModalsSelectJenis,
     ModalsPostProduct,
