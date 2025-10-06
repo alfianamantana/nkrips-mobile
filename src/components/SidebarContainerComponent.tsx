@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { Dimensions, View } from 'react-native';
 import Modal from "react-native-modal";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface SideBarContainerInterface {
     isShow: boolean,
@@ -17,6 +18,7 @@ const deviceHeight = Dimensions.get("window").height
 const deviceWidth = Dimensions.get("window").width
 
 const SideBarContainer: FC<SideBarContainerInterface> = ({ isShow = false, handleClose, children }) => {
+    const insets = useSafeAreaInsets();
     return (
         <Modal
             isVisible={isShow}
@@ -32,9 +34,9 @@ const SideBarContainer: FC<SideBarContainerInterface> = ({ isShow = false, handl
             hasBackdrop={true}
             animationIn="slideInLeft"
             animationOut="slideOutLeft"
-            style={{ padding: 0, margin: 0, position: "relative" }}
+            style={{ marginTop: 0, marginLeft: 0, position: "relative" }}
         >
-            <View className="absolute top-0 left-0">
+            <View className="absolute ">
                 {children}
             </View>
         </Modal>

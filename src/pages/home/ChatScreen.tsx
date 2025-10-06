@@ -9,8 +9,6 @@ import { Message } from "@pn/watch-is/model"
 import { useFocusEffect } from "@react-navigation/native"
 import { WS_URL } from "@env"
 import { io } from "socket.io-client"
-import { Logout } from "../../helpers/logout"
-import { LatestMessageCard } from "../../components/LatestMessageCard"
 
 interface ListChatInterface {
   navigation: any
@@ -117,7 +115,7 @@ const ListChat: FC<ListChatInterface> = ({ navigation }) => {
   }, [messages])
 
   return (
-    <View className="flex-1 bg-white p-4 relative">
+    <View className="flex-1 bg-white px-4 relative">
       <View className="flex-1">
         {
           loadingListChat ?

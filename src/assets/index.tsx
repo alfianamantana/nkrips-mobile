@@ -99,8 +99,10 @@ import ImageBadgeTransparant from "./images/image-badge-transparent.svg"
 import ImageFinishRegisterJadab from "./images/image-finish-register-jadab.svg"
 import ImageChangNumber from "./images/image-change-number.svg"
 import ImageChangeNumberSuccess from "./images/image-change-number-check.svg"
+import ImageNkrips from './images/logo-nkrips.jpeg'
 
 const Assets = {
+    ImageNkrips,
     IconNotif,
     IconZip,
     IconPdf,

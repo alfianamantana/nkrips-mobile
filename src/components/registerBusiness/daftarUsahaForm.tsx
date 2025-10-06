@@ -66,7 +66,7 @@ const DaftarUsahaForm: React.FC<DaftarUsahaFormProps> = ({ data, setData }) => {
           Nama Usaha <Text className="text-red-500">*</Text>
         </Text>
         <TextInput
-          className="border border-neutral-300 rounded px-3 py-3"
+          className="border border-neutral-300 rounded px-3 py-3 text-black"
           value={data.nama_usaha}
           placeholder="nama usaha"
           onChangeText={(text) => setData({ ...data, nama_usaha: text })}
@@ -78,7 +78,7 @@ const DaftarUsahaForm: React.FC<DaftarUsahaFormProps> = ({ data, setData }) => {
           Bidang <Text className="text-red-500">*</Text>
         </Text>
         <TextInput
-          className="border border-neutral-300 rounded px-3 py-3"
+          className="border border-neutral-300 rounded px-3 py-3 text-black"
           value={data.bidang}
           placeholder="bidang usaha"
           onChangeText={(text) => setData({ ...data, bidang: text })}
@@ -90,7 +90,7 @@ const DaftarUsahaForm: React.FC<DaftarUsahaFormProps> = ({ data, setData }) => {
           Alamat <Text className="text-red-500">*</Text>
         </Text>
         <TextInput
-          className="border border-neutral-300 rounded px-3 py-3"
+          className="border border-neutral-300 rounded px-3 py-3 text-black"
           value={data.alamat}
           placeholder="alamat usaha"
           onChangeText={(text) => setData({ ...data, alamat: text })}
@@ -102,7 +102,7 @@ const DaftarUsahaForm: React.FC<DaftarUsahaFormProps> = ({ data, setData }) => {
           Deskripsi <Text className="text-red-500">*</Text>
         </Text>
         <TextInput
-          className="border border-neutral-300 rounded px-3 py-3"
+          className="border border-neutral-300 rounded px-3 py-3 text-black"
           value={data.deskripsi}
           placeholder="deskripsi usaha"
           onChangeText={(text) => setData({ ...data, deskripsi: text })}

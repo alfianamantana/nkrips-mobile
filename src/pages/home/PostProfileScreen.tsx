@@ -27,6 +27,7 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
   const [postData, setPostData] = useState<Schema.GetResponsePostingBody["data"]>([])
   const [loadingAddFriend, setLoadingAddFriend] = useState(false)
 
+
   const listDataPost = async (type: string = "") => {
     setLoadingListPost(true)
     try {
@@ -34,8 +35,7 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
       setPostData(post.data)
 
     } catch (error) {
-      ToastAndroid.show("Gagal mengambil post data !", ToastAndroid.SHORT)
-
+      ToastAndroid.show(error.response?.data, ToastAndroid.SHORT)
     } finally {
       setLoadingListPost(false)
     }
@@ -47,7 +47,7 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
       const detailProfile = await profileContactRequest(username)
       console.log(detailProfile, 'detailProfiledetailProfile');
 
-      setDataProfile(detailProfile.user)
+      setDataProfile(detailProfile)
 
       if (isMyProfile === undefined) {
         searchFriend(detailProfile.phone_number!)
@@ -111,6 +111,7 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
 
   return (
     <View className="bg-gray-100 flex-1">
+
       {
         !onScrolling &&
         <Fragment>
@@ -122,10 +123,13 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
               <View className="flex-1 top-[-35px]">
                 <View className="w-[90px] h-[90px] bg-white rounded-full justify-center items-center">
                   {
-                    (Object.keys(dataProfile).length > 0 && dataProfile.profile_picture_url !== null) ?
-                      <Image source={{ uri: dataProfile.profile_picture_url }} className="w-[80px] h-[80px] rounded-full" />
-                      :
-                      <Assets.ImageEmptyProfile width={80} height={80} />
+                    loadingProfile ?
+                      <View className="w-[80px] h-[80px] rounded-full bg-gray-100 animate-pulse">
+                      </View> :
+                      (Object.keys(dataProfile?.user).length > 0 && dataProfile.user.profile_picture_url) ?
+                        <Image source={{ uri: dataProfile.user.profile_picture_url }} className="w-[80px] h-[80px] rounded-full" />
+                        :
+                        <Assets.ImageEmptyProfile width={80} height={80} />
                   }
                 </View>
                 <View className="mt-1 flex-row items-center">
@@ -136,8 +140,8 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
                           <View className="h-[20px] rounded-md bg-gray-100 w-4/12 animate-pulse">
                           </View>
                           :
-                          Object.keys(dataProfile).length > 0 &&
-                          <Text className="font-satoshi text-black text-lg font-bold">{dataProfile.name}</Text>
+                          Object.keys(dataProfile.user).length > 0 &&
+                          <Text className="font-satoshi text-black text-lg font-bold">{dataProfile.user.name}</Text>
 
                       }
                     </View>
@@ -146,7 +150,7 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
                     </View>
 
                     {
-                      isMyProfile === undefined &&
+                      !dataProfile.is_blocked && isMyProfile === undefined &&
                       <View className="flex-row items-center mt-5">
                         <View className="w-5/12 pr-1">
                           <Components.Button
@@ -155,30 +159,37 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
                             customIcon={isFriend ? "" : <Assets.IconPlusWhite width={20} height={20} />}
                             onPress={() => {
                               !isFriend &&
-                                Object.keys(dataProfile).length > 0 &&
-                                addFriends(dataProfile.public_hash)
+                                Object.keys(dataProfile?.user).length > 0 &&
+                                addFriends(dataProfile.user.public_hash)
                             }}
                             loading={loadingAddFriend}
                           />
                         </View>
                         <View className="w-5/12 px-1">
-                          <Components.Button
-                            label="Pesan"
-                            customHeight={37}
-                            customIcon={<Assets.IconMessageRed width={20} height={20} />}
-                            customColor="bg-Primary/Main/10"
-                            customColorText="text-Primary/Main"
-                            onPress={
-                              Object.keys(dataProfile).length > 0 ?
-                                () => {
-                                  navigation.navigate("DetailChat", {
-                                    public_hash: dataProfile.public_hash
-                                  })
-                                }
-                                :
-                                () => { }
-                            }
-                          />
+                          {
+                            loadingProfile ?
+                              <View className="h-[37px] rounded-md bg-gray-100 w-full animate-pulse">
+                              </View> :
+                              (
+                                <Components.Button
+                                  label="Pesan"
+                                  customHeight={37}
+                                  customIcon={<Assets.IconMessageRed width={20} height={20} />}
+                                  customColor="bg-Primary/Main/10"
+                                  customColorText="text-Primary/Main"
+                                  onPress={
+                                    Object.keys(dataProfile?.user).length > 0 ?
+                                      () => {
+                                        navigation.navigate("DetailChat", {
+                                          public_hash: dataProfile.user.public_hash
+                                        })
+                                      }
+                                      :
+                                      () => { }
+                                  }
+                                />
+                              )
+                          }
                         </View>
                         <View className="w-2/12 pl-1">
                           <ContextMenu
@@ -225,27 +236,6 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
         </Fragment>
       }
 
-      {/* <View className="px-4 pt-4 bg-white mb-2 flex-row items-center">
-                <Components.Tabs
-                    dataTab={[
-                        {
-                            label: "Postingan",
-                            value: 1
-                        },
-                        {
-                            label: "Video",
-                            value: 2
-                        },
-                        {
-                            label: "Jual Beli",
-                            value: 3
-                        }
-                    ]}
-                    activeValueTab={activeTab}
-                    onPress={setActiveTab}
-                />
-            </View> */}
-
       <View className="mb-2 flex-1">
         {
           loadingListPost ?
@@ -273,6 +263,7 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
                     <Components.ListPost
                       key={index}
                       dataPost={item}
+                      listPost={listDataPost}
                     />
                   )
                 }}
@@ -289,7 +280,18 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
               />
               :
               <View className="justify-center items-center flex-1">
-                <Text className="font-satoshi font-medium text-Primary/Main">Belum ada postingan !</Text>
+                {dataProfile.is_blocked ? (
+                  <View className="bg-red-300 px-4 py-2 m-4 rounded-full justify-center items-center">
+                    <Text className="text-sm text-center text-black">
+                      {dataProfile.is_blocker
+                        ? "Anda telah memblokir pengguna ini."
+                        : "Anda diblokir oleh pengguna ini."
+                      }
+                    </Text>
+                  </View>
+                ) : (
+                  <Text className="font-satoshi font-medium text-Primary/Main">Belum ada postingan !</Text>
+                )}
               </View>
         }
       </View>

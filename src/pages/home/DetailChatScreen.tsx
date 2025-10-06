@@ -1,7 +1,11 @@
-import { Text, TouchableOpacity, View, Image, ToastAndroid, FlatList, RefreshControl, ActivityIndicator, Platform } from "react-native"
+import {
+  Dimensions, Animated, KeyboardAvoidingView,
+  Text, TouchableOpacity, View, Image,
+  ToastAndroid, FlatList, RefreshControl, ActivityIndicator,
+  Platform, Keyboard, TouchableWithoutFeedback
+} from "react-native"
 import { FC, useCallback, useState, useRef, useEffect } from "react"
 import Components from "../../components"
-import { Dimensions, Animated, KeyboardAvoidingView } from "react-native";
 import Assets from "../../assets"
 import { storeShowMenuChat, storeShowMenuChatHold, storeUserChatDetail, storeUserGroupDetail } from "../../store"
 import { useFocusEffect } from "@react-navigation/native"
@@ -13,13 +17,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import io from 'socket.io-client';
 import { WS_URL } from "@env"
 import ImagePicker from 'react-native-image-crop-picker';
-import { uploadFile } from "../../helpers/uploadFile"
+import { uploadFile2 } from "../../helpers/uploadFile"
 import Clipboard from '@react-native-clipboard/clipboard';
 import tailwindConfig from "../../../tailwind.config"
 import { Logout } from "../../helpers/logout"
 import Video from "react-native-video"
 import Modal from "react-native-modal"
 import { postPinMessageRequest, deleteMessageRequest, editMessageRequest } from "../../services/home/chat/index"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -34,10 +39,9 @@ interface DetailChatInterface {
 }
 
 const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 0 : 0;
   let flatListRef = useRef<null | any>(null)
-
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordedAudio, setRecordedAudio] = useState<{ uri: string, fileName: string, type: string } | null>(null);
   const [refreshing,] = useState(false)
   const [text, setText] = useState("")
   const [showChoseFile, setShowChoseFile] = useState(false)
@@ -62,46 +66,57 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
   const [pinMessage, setPinMessage] = useState<Message | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const pinnedMessages = listMessage.filter(msg => msg.message.is_pinned);
-  const unpinnedMessages = listMessage.filter(msg => !msg.message.is_pinned);
   const [editMessage, setEditMessage] = useState<Message | null>(null);
   const [editText, setEditText] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [menuHeightState, setMenuHeightState] = useState(menuHeight); // menuHeight default (misal 120)
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [keyboardShown, setKeyboardShown] = useState(false);
+
+  useEffect(() => {
+    const showListener = Keyboard.addListener('keyboardDidShow', (e) => {
+      console.log(e, '?///?');
+      // Pastikan tinggi keyboard positif; jika negatif (bug simulator), set ke 0
+      const height = e.endCoordinates.height > 0 ? e.endCoordinates.height : 0;
+      console.log(height, 'heightheight');
+
+      setKeyboardHeight(height);
+      setKeyboardShown(true);
+    });
+    const hideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+      setKeyboardShown(false);
+    });
+
+    return () => {
+      showListener.remove();
+      hideListener.remove();
+    };
+  }, []);
 
   const handlePinMessage = async (duration: number) => {
     if (pinMessage) {
-      try {
-        await postPinMessageRequest(
-          public_hash,
-          pinMessage.message.id,
-          duration
-        );
-        ToastAndroid.show("Pesan berhasil dipin!", ToastAndroid.SHORT);
-        listChat();
-      } catch (err) {
-        ToastAndroid.show("Gagal pin pesan!", ToastAndroid.SHORT);
+      if (isComunity) {
+
+      } else {
+        try {
+          await postPinMessageRequest(
+            public_hash,
+            pinMessage.message.id,
+            duration
+          );
+          ToastAndroid.show("Pesan berhasil dipin!", ToastAndroid.SHORT);
+          listChat();
+        } catch (err) {
+          console.log(err.response.data, '??asaS?');
+
+          ToastAndroid.show("Gagal pin pesan!", ToastAndroid.SHORT);
+        }
       }
     }
   };
 
-  const startRecording = async () => {
-    // Set up recording progress listener
-    // Sound.addRecordBackListener((e: RecordBackType) => {
-    //     console.log('Recording progress:', e.currentPosition, e.currentMetering);
-    //     setRecordSecs(e.currentPosition);
-    //     setRecordTime(Sound.mmssss(Math.floor(e.currentPosition)));
-    // });
-
-    // const result = await Sound.startRecorder();
-    // console.log('Recording started:', result);
-  };
-
-  const stopRecording = async () => {
-    // const result = await Sound.stopRecorder();
-    // Sound.removeRecordBackListener();
-    // console.log('Recording stopped:', result);
-  };
 
   useEffect(() => {
     // Jika ada parameter text dari navigasi, set ke TextInput
@@ -110,47 +125,10 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
     }
   }, [route.params?.text]);
 
-  const sendAudioMessage = async () => {
-    if (!recordedAudio) return;
-    setLoadingSendChat(true);
-    try {
-      // Upload audio ke server
-      const uploadRes = await uploadFile(
-        Platform.OS === "android" ? recordedAudio.uri : recordedAudio.uri.replace("file://", ""),
-        recordedAudio.type
-      );
-      const audioUrl = uploadRes.data.url || uploadRes.data;
-
-      // Kirim pesan ke chat
-      const body = {
-        message: "",
-        attachment: {
-          type: "AUDIO",
-          filename: audioUrl
-        },
-        id_reply_message: replyMessage?.message.id
-      };
-
-      if (isComunity) {
-        await postChatGroupRequest(public_hash, "", "AUDIO", audioUrl, replyMessage?.message.id);
-      } else {
-        await postChatRequest(public_hash, "", "AUDIO", audioUrl, replyMessage?.message.id);
-      }
-
-      setRecordedAudio(null);
-      setReplyMessage(null);
-      listChat();
-    } catch (e) {
-      ToastAndroid.show("Gagal mengirim audio!", ToastAndroid.SHORT);
-    } finally {
-      setLoadingSendChat(false);
-    }
-  };
-
   const handleEditMessage = async () => {
     if (!editMessage) return;
     try {
-      await editMessageRequest(public_hash, editMessage.message.id, text);
+      await editMessageRequest(public_hash, editMessage.message.id, editText);
       ToastAndroid.show("Pesan berhasil diedit!", ToastAndroid.SHORT);
       setEditMessage(null);
       setText("");
@@ -229,72 +207,71 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
     }
   }
   const sendChat = async () => {
-    setLoadingSendChat(true)
+    setLoadingSendChat(true);
     try {
       const replyId = replyMessage ? replyMessage.message.id : undefined;
 
-      if (isComunity) {
-        if (imageSend.path !== "") {
-          const sendMessage = await postChatGroupRequest(
+      // Tentukan attachment yang akan dikirim
+      let attachmentType: AttachmentType | undefined;
+      let attachmentName: string | undefined;
+      let attachmentPath: string | undefined;
+      let attachmentMime: string | undefined;
+
+      if (imageSend.path !== "") {
+        attachmentType = AttachmentType.IMAGE;
+        attachmentName = imageSend.path.split("/").slice(-1)[0];
+        attachmentPath = imageSend.path;
+        attachmentMime = imageSend.mime;
+      } else if (fileSend.path !== "") {
+        attachmentType = AttachmentType.FILE;
+        attachmentName = fileSend.name;
+        attachmentPath = fileSend.path;
+        attachmentMime = fileSend.mime;
+      } else if (VideoSend.path !== "") {
+        attachmentType = AttachmentType.VIDEO;
+        attachmentName = VideoSend.name;
+        attachmentPath = VideoSend.path;
+        attachmentMime = VideoSend.mime;
+      }
+
+      // 1. Kirim pesan dulu, dapatkan upload_token jika ada attachment
+      let sendMessage;
+      if (attachmentType) {
+        if (isComunity) {
+          sendMessage = await postChatGroupRequest(
             public_hash,
             text,
-            AttachmentType.IMAGE,
-            imageSend.path.split("/").slice(-1)[0],
+            attachmentType,
+            attachmentName,
             replyId
           );
-          const formData = new FormData()
-
-          formData.append("file", {
-            name: imageSend.path.split("/").slice(-1)[0],
-            type: imageSend.mime,
-            uri: Platform.OS === 'android' ? imageSend.path : imageSend.path.replace('file://', ''),
-          })
-
-          await uploadFile(`/9/${sendMessage.upload_token}`, formData)
-          setImageSend({ path: "", mime: "", base64: "" })
-        }
-
-        if (fileSend.path !== "") {
-          const sendMessage = await postChatGroupRequest(
+        } else {
+          sendMessage = await postChatRequest(
             public_hash,
             text,
-            AttachmentType.FILE,
-            fileSend.name,
+            attachmentType,
+            attachmentName,
             replyId
           );
-          const formData = new FormData()
-
-          formData.append("file", {
-            name: fileSend.name,
-            type: fileSend.mime,
-            uri: Platform.OS === 'android' ? fileSend.path : fileSend.path.replace('file://', ''),
-          })
-
-          await uploadFile(`/9/${sendMessage.upload_token}`, formData)
-          setFileSend({ path: "", mime: "", name: "" })
         }
 
-        if (VideoSend.path !== "") {
-          const sendMessage = await postChatGroupRequest(
-            public_hash,
-            text,
-            AttachmentType.VIDEO,
-            VideoSend.name,
-            replyId
-          );
-          const formData = new FormData()
+        // 2. Upload file ke endpoint khusus 
+        const formData = new FormData();
+        formData.append("file", {
+          name: attachmentName,
+          type: attachmentMime,
+          uri: Platform.OS === 'android' ? attachmentPath : attachmentPath?.replace('file://', ''),
+        });
 
-          formData.append("file", {
-            name: VideoSend.name,
-            type: VideoSend.mime,
-            uri: Platform.OS === 'android' ? VideoSend.path : VideoSend.path.replace('file://', ''),
-          })
+        await uploadFile2(`/9/${sendMessage.upload_token}`, formData);
 
-          await uploadFile(`/9/${sendMessage.upload_token}`, formData)
-          setVideoSend({ path: "", mime: "", name: "" })
-        }
-
-        if (imageSend.path === "" && fileSend.path === "" && VideoSend.path === "") {
+        // 3. Reset state attachment setelah upload berhasil
+        setImageSend({ path: "", mime: "", base64: "" });
+        setFileSend({ path: "", mime: "", name: "" });
+        setVideoSend({ path: "", mime: "", name: "" });
+      } else {
+        // Jika hanya text, kirim pesan biasa
+        if (isComunity) {
           await postChatGroupRequest(
             public_hash,
             text,
@@ -302,70 +279,7 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
             undefined,
             replyId
           );
-        }
-
-      } else {
-        if (imageSend.path !== "") {
-          const sendMessage = await postChatRequest(
-            public_hash,
-            text,
-            AttachmentType.IMAGE,
-            imageSend.path.split("/").slice(-1)[0],
-            replyId
-          );
-          const formData = new FormData()
-
-          formData.append("file", {
-            name: imageSend.path.split("/").slice(-1)[0],
-            type: imageSend.mime,
-            uri: Platform.OS === 'android' ? imageSend.path : imageSend.path.replace('file://', ''),
-          })
-
-          await uploadFile(`/9/${sendMessage.upload_token}`, formData)
-          setImageSend({ path: "", mime: "", base64: "" })
-        }
-
-        if (fileSend.path !== "") {
-          const sendMessage = await postChatRequest(
-            public_hash,
-            text,
-            AttachmentType.FILE,
-            fileSend.name,
-            replyId
-          );
-          const formData = new FormData()
-
-          formData.append("file", {
-            name: fileSend.name,
-            type: fileSend.mime,
-            uri: Platform.OS === 'android' ? fileSend.path : fileSend.path.replace('file://', ''),
-          })
-
-          await uploadFile(`/9/${sendMessage.upload_token}`, formData)
-          setFileSend({ path: "", mime: "", name: "" })
-        }
-
-        if (VideoSend.path !== "") {
-          const sendMessage = await postChatRequest(
-            public_hash,
-            text,
-            AttachmentType.VIDEO,
-            VideoSend.name,
-            replyId
-          );
-          const formData = new FormData()
-
-          formData.append("file", {
-            name: VideoSend.name,
-            type: VideoSend.mime,
-            uri: Platform.OS === 'android' ? VideoSend.path : VideoSend.path.replace('file://', ''),
-          })
-
-          await uploadFile(`/9/${sendMessage.upload_token}`, formData)
-          setVideoSend({ path: "", mime: "", name: "" })
-        }
-
-        if (imageSend.path === "" && fileSend.path === "" && VideoSend.path === "") {
+        } else {
           await postChatRequest(
             public_hash,
             text,
@@ -376,16 +290,17 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
         }
       }
 
-      setText("")
-      setReplyMessage(null)
-      listChat()
-
+      setText("");
+      setReplyMessage(null);
+      listChat();
     } catch (error) {
-      ToastAndroid.show("Gagal mengirim pesan !", ToastAndroid.SHORT)
+      console.log(error.response?.data || error, 'error send chat');
+
+      ToastAndroid.show("Gagal mengirim pesan!", ToastAndroid.SHORT);
     } finally {
-      setLoadingSendChat(false)
+      setLoadingSendChat(false);
     }
-  }
+  };
 
   const getMyUser = async () => {
     const user = await AsyncStorage.getItem("user")
@@ -581,17 +496,18 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState<{ x: number, y: number } | null>(null);
   let menuLeft = menuPosition?.x ?? 50;
-  let menuTop = (menuPosition?.y ?? 100) - 70;
+  let menuTop = menuPosition?.y ?? 100;
+  if (menuTop + menuHeightState > windowHeight) {
+    menuTop = menuTop - menuHeightState - 50; // Muncul di atas bubble jika terlalu ke bawah
+  } else {
+    menuTop = menuTop - 150; // Muncul di bawah bubble jika cukup ruang
+  }
   if (menuLeft + menuWidth > windowWidth) {
     menuLeft = windowWidth - menuWidth - 12; // 12px margin dari kanan
   }
   // Cegah keluar kiri
   if (menuLeft < 0) {
     menuLeft = 12;
-  }
-  // Cegah keluar bawah
-  if (menuTop + menuHeightState > windowHeight) {
-    menuTop = windowHeight - menuHeightState - 100;
   }
   // Cegah keluar atas
   if (menuTop < 0) {
@@ -628,231 +544,237 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
     }
   }, [showMenu]);
   return (
-    <View className="flex-1 relative">
-      {showMenu && (
-        <TouchableOpacity
-          id="overlay-menu"
-          style={{
-            position: "absolute",
-            top: 0, left: 0, right: 0, bottom: 0,
-            zIndex: 100,
-          }}
-          activeOpacity={1}
-          onPress={handleHideMenu}
-        >
-          <Animated.View
-            style={{
-              position: "absolute",
-              top: menuTop,
-              left: menuLeft,
-              backgroundColor: "#fff",
-              borderRadius: 8,
-              padding: 8,
-              elevation: 4,
-              minWidth: 140,
-              // Animasi scale dan opacity
-              opacity: menuAnim,
-              transform: [
-                {
-                  scale: menuAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.85, 1],
-                  }),
-                },
-              ],
-            }}
-            onLayout={e => setMenuHeightState(e.nativeEvent.layout.height)}
-          >
-
-            {[
-              {
-                title: "Salin",
-                icon: <Assets.IconCopy width={18} height={18} color="#232B36" style={{ marginRight: 10 }} />,
-                onPress: () => {
-                  Clipboard.setString(menuItem?.message?.data || "");
-                  handleHideMenu();
-                }
-              },
-              {
-                title: "Balas",
-                icon: <Assets.IconReply width={18} height={18} color="#232B36" style={{ marginRight: 10 }} />,
-                onPress: () => {
-                  setReplyMessage(menuItem!);
-                  handleHideMenu();
-                }
-              },
-              {
-                title: menuItem?.message?.is_pinned ? "Unpin" : "Pin",
-                icon: menuItem?.message?.is_pinned
-                  ? <Assets.IconUnpin width={18} height={18} color="#232B36" style={{ marginRight: 10 }} />
-                  : <Assets.IconPin width={18} height={18} color="#232B36" style={{ marginRight: 10 }} />,
-                onPress: () => {
-                  if (menuItem?.message?.is_pinned) {
-                    handleUnpinMessage(menuItem.message.id);
-                  } else {
-                    setPinMessage(menuItem!);
-                    setShowPinModal(true);
-                  }
-                  handleHideMenu();
-                }
-              },
-              ...(menuItem && myUser.id === menuItem.message.id_user_from
-                ? [
-                  {
-                    title: "Edit",
-                    icon: <Assets.IconEdit width={18} height={18} color="#232B36" style={{ marginRight: 10 }} />,
-                    onPress: () => {
-                      setEditMessage(menuItem!);
-                      setEditText(menuItem?.message?.data || "");
-                      setShowEditModal(true);
-                      handleHideMenu();
-                    }
-                  },
-                  {
-                    title: "Hapus",
-                    icon: <Assets.IconDelete width={18} height={18} color="#d32f2f" style={{ marginRight: 10 }} />,
-                    onPress: () => {
-                      handleDeleteMessage(menuItem!.message.id);
-                      handleHideMenu();
-                    }
-                  }
-                ]
-                : []
-              ),
-            ].map((action, idx, arr) => (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={['left', 'right', 'bottom']}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={keyboardVerticalOffset}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            {showMenu && (
               <TouchableOpacity
-                key={idx}
-                onPress={action.onPress}
+                id="overlay-menu"
                 style={{
+                  position: "absolute",
+                  top: 0, left: 0, right: 0, bottom: 0,
+                  zIndex: 100,
+                }}
+                activeOpacity={1}
+                onPress={handleHideMenu}
+              >
+                <Animated.View
+                  style={{
+                    position: "absolute",
+                    top: menuTop,
+                    left: menuLeft,
+                    backgroundColor: "#fff",
+                    borderRadius: 8,
+                    padding: 8,
+                    elevation: 4,
+                    minWidth: 140,
+                    // Animasi scale dan opacity
+                    opacity: menuAnim,
+                    transform: [
+                      {
+                        scale: menuAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.85, 1],
+                        }),
+                      },
+                    ],
+                  }}
+                  onLayout={e => setMenuHeightState(e.nativeEvent.layout.height)}
+                >
+
+                  {[
+                    {
+                      title: "Salin",
+                      icon: <Assets.IconCopy width={18} height={18} color="#232B36" style={{ marginRight: 10 }} />,
+                      onPress: () => {
+                        Clipboard.setString(menuItem?.message?.data || "");
+                        handleHideMenu();
+                      }
+                    },
+                    {
+                      title: "Balas",
+                      icon: <Assets.IconReply width={18} height={18} color="#232B36" style={{ marginRight: 10 }} />,
+                      onPress: () => {
+                        setReplyMessage(menuItem!);
+                        handleHideMenu();
+                      }
+                    },
+                    {
+                      title: menuItem?.message?.is_pinned ? "Unpin" : "Pin",
+                      icon: menuItem?.message?.is_pinned
+                        ? <Assets.IconPin width={18} height={18} color="#232B36" style={{ marginRight: 10 }} />
+                        : <Assets.IconPin width={18} height={18} color="#232B36" style={{ marginRight: 10 }} />,
+                      onPress: () => {
+                        if (menuItem?.message?.is_pinned) {
+                          handleUnpinMessage(menuItem.message.id);
+                        } else {
+                          setPinMessage(menuItem!);
+                          setShowPinModal(true);
+                        }
+                        handleHideMenu();
+                      }
+                    },
+                    ...(menuItem && myUser.id === menuItem.message.id_user_from
+                      ? [
+                        {
+                          title: "Edit",
+                          icon: <Assets.IconEdit width={18} height={18} color="#232B36" style={{ marginRight: 10 }} />,
+                          onPress: () => {
+                            setEditMessage(menuItem!);
+                            setEditText(menuItem?.message?.data || "");
+                            setShowEditModal(true);
+                            handleHideMenu();
+                          }
+                        },
+                        {
+                          title: "Hapus",
+                          icon: <Assets.IconDelete width={18} height={18} color="#d32f2f" style={{ marginRight: 10 }} />,
+                          onPress: () => {
+                            handleDeleteMessage(menuItem!.message.id);
+                            handleHideMenu();
+                          }
+                        }
+                      ]
+                      : []
+                    ),
+                  ].map((action, idx, arr) => (
+                    <TouchableOpacity
+                      key={idx}
+                      onPress={action.onPress}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingVertical: 10,
+                        paddingHorizontal: 12,
+                        borderBottomWidth: idx < arr.length - 1 ? 1 : 0,
+                        borderBottomColor: "#eee"
+                      }}
+                    >
+                      {action.icon}
+                      <Text className="text-black" style={{ fontSize: 16 }}>{action.title}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </Animated.View>
+              </TouchableOpacity>
+            )}
+
+            <View className="absolute left-0 top-0 w-full">
+              <Image source={require("../../assets/images/image-background-chat.png")} className="absolute left-0 top-0 w-full h-screen" />
+            </View>
+
+            {pinnedMessages.length > 0 && activePinnedIndex !== -1 && (
+              <View
+                id="pinned-messages"
+                style={{
+                  marginTop: 2,
+                  marginHorizontal: 5,
+                  maxHeight: 48,
+                  overflow: "visible",
                   flexDirection: "row",
                   alignItems: "center",
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  borderBottomWidth: idx < arr.length - 1 ? 1 : 0,
-                  borderBottomColor: "#eee"
+                  backgroundColor: "#fff",
+                  borderRadius: 8,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  shadowColor: "#000",
+                  shadowOpacity: 0.03,
+                  shadowRadius: 1,
+                  elevation: 1,
                 }}
               >
-                {action.icon}
-                <Text className="text-black" style={{ fontSize: 16 }}>{action.title}</Text>
-              </TouchableOpacity>
-            ))}
-          </Animated.View>
-        </TouchableOpacity>
-      )}
+                {/* Icon pin SVG */}
+                <Assets.IconPin width={22} height={22} style={{ marginRight: 8 }} color="#8A94A6" />
 
-      <View className="absolute left-0 top-0 w-full">
-        <Image source={require("../../assets/images/image-background-chat.png")} className="absolute left-0 top-0 w-full h-screen" />
-      </View>
+                {/* Konten pin */}
+                <TouchableOpacity
+                  style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    scrollToMessage(pinnedMessages[activePinnedIndex].message.id);
+                    if (pinnedMessages.length > 1) {
+                      setActivePinnedIndex((prev) => (prev + 1) % pinnedMessages.length);
+                    }
+                  }}
+                >
+                  {/* Jika ada attachment */}
+                  {pinnedMessages[activePinnedIndex].list_attachment && pinnedMessages[activePinnedIndex].list_attachment.length > 0 ? (
+                    <>
+                      {/* Icon file/gambar */}
+                      {pinnedMessages[activePinnedIndex].list_attachment[0].type === "IMAGE" ? (
+                        <Assets.IconGallery width={18} height={18} style={{ marginRight: 6 }} color="#8A94A6" />
+                      ) : (
+                        <Assets.IconDocument width={18} height={18} style={{ marginRight: 6 }} color="#8A94A6" />
+                      )}
+                      {/* Nama file */}
+                      <Text style={{ color: "#232B36", fontWeight: "500" }} numberOfLines={1}>
+                        {pinnedMessages[activePinnedIndex].list_attachment[0].type === "IMAGE" ? "Gambar" : "Dokumen"}
+                      </Text>
+                    </>
+                  ) : (
+                    // Jika hanya text
+                    <Text style={{ color: "#232B36", fontWeight: "500" }} numberOfLines={1}>
+                      {pinnedMessages[activePinnedIndex].message.data}
+                    </Text>
+                  )}
+                </TouchableOpacity>
 
-      {pinnedMessages.length > 0 && activePinnedIndex !== -1 && (
-        <View
-          id="pinned-messages"
-          style={{
-            marginBottom: 8,
-            marginTop: 1,
-            marginHorizontal: 5,
-            maxHeight: 48,
-            overflow: "visible",
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: "#fff",
-            borderRadius: 8,
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            shadowColor: "#000",
-            shadowOpacity: 0.03,
-            shadowRadius: 1,
-            elevation: 1,
-          }}
-        >
-          {/* Icon pin SVG */}
-          <Assets.IconPin width={22} height={22} style={{ marginRight: 8 }} color="#8A94A6" />
-
-          {/* Konten pin */}
-          <TouchableOpacity
-            style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
-            activeOpacity={0.7}
-            onPress={() => {
-              scrollToMessage(pinnedMessages[activePinnedIndex].message.id);
-              if (pinnedMessages.length > 1) {
-                setActivePinnedIndex((prev) => (prev + 1) % pinnedMessages.length);
-              }
-            }}
-          >
-            {/* Jika ada attachment */}
-            {pinnedMessages[activePinnedIndex].list_attachment && pinnedMessages[activePinnedIndex].list_attachment.length > 0 ? (
-              <>
-                {/* Icon file/gambar */}
-                {pinnedMessages[activePinnedIndex].list_attachment[0].type === "IMAGE" ? (
-                  <Assets.IconGallery width={18} height={18} style={{ marginRight: 6 }} color="#8A94A6" />
-                ) : (
-                  <Assets.IconDocument width={18} height={18} style={{ marginRight: 6 }} color="#8A94A6" />
+                {/* Penanda jika lebih dari 1 pinned */}
+                {pinnedMessages.length > 1 && (
+                  <View style={{
+                    backgroundColor: "#d32f2f",
+                    borderRadius: 12,
+                    paddingHorizontal: 10,
+                    paddingVertical: 2,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: 32,
+                    marginLeft: 8
+                  }}>
+                    <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 12 }}>
+                      {activePinnedIndex + 1}/{pinnedMessages.length}
+                    </Text>
+                  </View>
                 )}
-                {/* Nama file */}
-                <Text style={{ color: "#232B36", fontWeight: "500" }} numberOfLines={1}>
-                  {pinnedMessages[activePinnedIndex].list_attachment[0].type === "IMAGE" ? "Gambar" : "Dokumen"}
-                </Text>
-              </>
-            ) : (
-              // Jika hanya text
-              <Text style={{ color: "#232B36", fontWeight: "500" }} numberOfLines={1}>
-                {pinnedMessages[activePinnedIndex].message.data}
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Penanda jika lebih dari 1 pinned */}
-          {pinnedMessages.length > 1 && (
-            <View style={{
-              backgroundColor: "#d32f2f",
-              borderRadius: 12,
-              paddingHorizontal: 10,
-              paddingVertical: 2,
-              alignItems: "center",
-              justifyContent: "center",
-              minWidth: 32,
-              marginLeft: 8
-            }}>
-              <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 12 }}>
-                {activePinnedIndex + 1}/{pinnedMessages.length}
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
-
-      <View className="flex-1 pt-2 px-4">
-        <View className="w-full flex-1">
-          {
-            loading ?
-              <View className="justify-center items-center flex-1 flex-row">
-                <View>
-                  <ActivityIndicator color={theme?.colors!["Primary/Main"] as string} size="small" />
-                </View>
-                <View className="ml-3">
-                  <Text className="font-satoshi font-medium text-Primary/Main">Memuat pesan ...</Text>
-                </View>
               </View>
-              : (
-                <>
-                  {listMessage.length > 0 &&
-                    <FlatList
-                      ref={flatListRef}
-                      removeClippedSubviews
-                      initialNumToRender={5}
-                      inverted
-                      data={listMessage}
-                      showsVerticalScrollIndicator={false}
-                      keyExtractor={(item, index) => index.toString()}
-                      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={listChat} />}
-                      renderItem={({ item, index }: { item: Message, index: number }) => {
-                        return (
-                          <View key={index}>
-                            {
-                              myUser.id === item?.message.id_user_from ?
+            )}
+
+            <View className="flex-1 pt-2 px-4">
+              <View className="w-full flex-1">
+                {
+                  loading ?
+                    <View className="justify-center items-center flex-1 flex-row">
+                      <View>
+                        <ActivityIndicator color={theme?.colors!["Primary/Main"] as string} size="small" />
+                      </View>
+                      <View className="ml-3">
+                        <Text className="font-satoshi font-medium text-Primary/Main">Memuat pesan ...</Text>
+                      </View>
+                    </View>
+                    : (
+                      <>
+                        {listMessage.length > 0 &&
+                          <FlatList
+                            ref={flatListRef}
+                            removeClippedSubviews
+                            initialNumToRender={5}
+                            inverted
+                            data={listMessage}
+                            keyboardShouldPersistTaps="handled"
+                            showsVerticalScrollIndicator={false}
+                            keyExtractor={(item, index) => index.toString()}
+                            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={listChat} />}
+                            renderItem={({ item, index }: { item: Message, index: number }) => {
+                              const isLeft = myUser.id !== item?.message.id_user_from;
+                              return (
                                 <Components.BubbleChat
                                   key={index}
-                                  isLeft={false}
+                                  isLeft={isLeft}
+                                  isComunity={isComunity}
                                   item={item}
                                   setReplyMessage={setReplyMessage}
                                   setShowMenuChatHold={setShowMenuChatHold}
@@ -861,15 +783,11 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
                                     setPinMessage(msg);
                                     setShowPinModal(true);
                                   }}
-                                  setShowMenuChatHold={() => {
-                                    setShowMenuChatHold(true);
-                                    setSelectedMessage(item); // item adalah message yang di-hold
-                                  }}
                                   onUnpin={(msg) => {
                                     handleUnpinMessage(msg.message.id);
                                   }}
-                                  onDelete={(msg) => handleDeleteMessage(msg.message.id)}
-                                  onEdit={(msg) => {
+                                  onDelete={isLeft ? undefined : (msg) => handleDeleteMessage(msg.message.id)}
+                                  onEdit={isLeft ? undefined : (msg) => {
                                     if (msg.list_attachment && msg.list_attachment.length > 0) return;
                                     setEditMessage(msg);
                                     setText(msg.message.data);
@@ -877,349 +795,314 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
                                   }}
                                   scrollToMessage={scrollToMessage}
                                   onLongPressBubble={(e, item) => {
-                                    // Ambil posisi bubble untuk menu
                                     const { pageX, pageY } = e.nativeEvent;
                                     handleShowMenu(item, { x: pageX, y: pageY });
                                   }}
                                 />
-                                :
-                                <Components.BubbleChat
-                                  key={index}
-                                  isLeft={true}
-                                  item={item}
-                                  setReplyMessage={setReplyMessage}
-                                  setShowMenuChatHold={setShowMenuChatHold}
-                                  myUser={myUser}
-                                  onPressPin={(msg) => {
-                                    setPinMessage(msg);
-                                    setShowPinModal(true);
-                                  }}
-                                  setShowMenuChatHold={() => {
-                                    setShowMenuChatHold(true);
-                                    setSelectedMessage(item); // item adalah message yang di-hold
-                                  }}
-                                  onUnpin={(msg) => {
-                                    handleUnpinMessage(msg.message.id);
-                                  }}
-                                  scrollToMessage={scrollToMessage}
-                                  onLongPressBubble={(e, item) => {
-                                    const { pageX, pageY } = e.nativeEvent;
-                                    handleShowMenu(item, { x: pageX, y: pageY });
-                                  }}
-                                />
-                            }
-                          </View>
-                        )
-                      }}
-                      onEndReached={handlePagination}
-                      onEndReachedThreshold={0.5}
-                      ListFooterComponent={() => (
-                        <Components.LoadMore isEndPages={isEndPages} label="Memuat pesan ..." />
-                      )}
-                    />}
-                </>
-              )
-          }
-        </View>
-      </View>
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-      >
-        <View className="bg-white pt-2 pb-3 px-4">
-          {
-            VideoSend.path !== "" &&
-            <View className="flex-row items-center">
-              <View className="flex-1">
-                <Video
-                  source={{ uri: VideoSend.path }}
-                  resizeMode="cover"
-                  className="rounded-md w-[100px] h-[100px]"
-                />
-              </View>
-              <TouchableOpacity onPress={() => {
-                setVideoSend({
-                  path: "",
-                  mime: "",
-                  name: ""
-                })
-              }}>
-                <Assets.IconTimes width={40} />
-              </TouchableOpacity>
-            </View>
-          }
-
-          {
-            imageSend.path !== "" &&
-            <View className="flex-row items-center">
-              <View className="flex-1">
-                <Image
-                  source={{ uri: imageSend.path }}
-                  width={100}
-                  height={100}
-                  className="rounded-md"
-                />
-              </View>
-              <TouchableOpacity onPress={() => {
-                setImageSend({
-                  path: "",
-                  base64: "",
-                  mime: ""
-                })
-              }}>
-                <Assets.IconTimes width={40} />
-              </TouchableOpacity>
-            </View>
-          }
-
-          {
-            fileSend.path !== "" &&
-            <View className="flex-row items-center">
-              <View className="flex-1 py-2">
-                <Text numberOfLines={1} className="font-satoshi text-black font-medium">{fileSend.name}</Text>
-              </View>
-              <TouchableOpacity onPress={() => {
-                setFileSend({
-                  path: "",
-                  name: "",
-                  mime: ""
-                })
-              }}>
-                <Assets.IconTimes width={40} />
-              </TouchableOpacity>
-            </View>
-          }
-
-          {replyMessage && (
-            <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2 mb-2">
-              <View className="flex-1">
-                <Text className="text-xs text-gray-500 mb-0.5">
-                  Replying to: {replyMessage.message.otm_id_user_from?.id === myUser ? 'You' : replyMessage.message.otm_id_user_from?.name || 'User'}
-                </Text>
-                {/* Render gambar jika ada di list_attachment */}
-                {replyMessage.list_attachment && replyMessage.list_attachment.length > 0 && (
-                  <View style={{ flexDirection: 'row', gap: 4, marginBottom: 2 }}>
-                    {replyMessage.list_attachment
-                      .filter(att => att.type === "IMAGE" && att.url)
-                      .map((img, idx) => (
-                        <Image
-                          key={img.id || idx}
-                          source={{ uri: img.url }}
-                          style={{ width: 40, height: 40, borderRadius: 6, marginRight: 4 }}
-                          resizeMode="cover"
-                        />
-                      ))}
-                  </View>
-                )}
-                {/* Render text jika ada */}
-                {replyMessage.message.data ? (
-                  <Text className="text-sm text-gray-800" numberOfLines={1}>
-                    {replyMessage.message.data}
-                  </Text>
-                ) : null}
-              </View>
-              <TouchableOpacity onPress={() => setReplyMessage(null)}>
-                <Assets.IconTimes width={18} height={18} />
-              </TouchableOpacity>
-            </View>
-          )}
-
-          <View className="flex-row items-center">
-            <View className="flex-1">
-              <Components.FormInput
-                isMultiLine={true}
-                isBackground={true}
-                value={text}
-                onChange={setText}
-                placeholder="Ketik pesan"
-                customHeight={isEditing ? 80 : 40}
-                sufix={
-                  <View className="flex flex-col gap-y-3">
-                    {
-                      !showChoseFile ?
-                        <TouchableOpacity onPress={() => setShowChoseFile(showChoseFile ? false : true)}>
-                          <Assets.IconFile width={20} height={20} />
-                        </TouchableOpacity>
-                        :
-                        <TouchableOpacity onPress={() => setShowChoseFile(showChoseFile ? false : true)}>
-                          <Assets.IconTimes width={20} height={20} />
-                        </TouchableOpacity>
-                    }
-                    {
-                      isEditing && (
-                        <TouchableOpacity
-                          className=""
-                          onPress={() => {
-                            setIsEditing(false);
-                            setEditMessage(null);
-                            setText("");
-                          }}
-                        >
-                          <Assets.IconTimes width={20} height={20} />
-                        </TouchableOpacity>
-                      )
-                    }
-
-                  </View>
+                              )
+                            }}
+                            onEndReached={handlePagination}
+                            onEndReachedThreshold={0.5}
+                            ListFooterComponent={() => (
+                              <Components.LoadMore isEndPages={isEndPages} label="Memuat pesan ..." />
+                            )}
+                          />}
+                      </>
+                    )
                 }
-              />
-
+              </View>
             </View>
-            {isEditing ? (
-              <>
 
-                <TouchableOpacity
-                  className="pl-3 items-end justify-center"
-                  onPress={handleEditMessage}
-                >
-                  <Assets.IconSend width={30} height={30} />
-
-                </TouchableOpacity>
-              </>
-            ) : (
-              (
-                text && !showChoseFile ?
-                  <TouchableOpacity
-                    className="pl-3 items-end justify-center"
-                    onPress={
-                      (fileSend.path !== "" || imageSend.path !== "" || VideoSend.path !== "") ?
-                        () => sendChat()
-                        :
-                        (text !== "" && text.match(/^\s+$/) === null) ?
-                          () => sendChat()
-                          :
-                          () => { }
-                    }
-                  >
-                    {
-                      loadingSendChat ?
-                        <ActivityIndicator color={theme?.colors!["Primary/Main"] as string} size={30} />
-                        :
-                        <Assets.IconSend width={30} height={30} />
-                    }
-                  </TouchableOpacity>
-                  :
-                  <TouchableOpacity
-                    id="mic-button"
-                    className="pl-3 items-end justify-center"
-                    onPress={async () => {
-                      if (isRecording) {
-                        await stopRecording();
-                      } else {
-                        await startRecording();
-                      }
-                    }}
-                  >
-                    {isRecording ? (
-                      // SVG kotak (stop)
-                      <View style={{
-                        width: 30, height: 30, borderRadius: 15, backgroundColor: "#d32f2f", alignItems: "center", justifyContent: "center"
-                      }}>
-                        {/* SVG kotak */}
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                          <rect width="18" height="18" x="3" y="3" rx="2" fill="#fff" />
-                        </svg>
+            <View>
+              {!isComunity && dataUser.is_blocked ? (
+                <>
+                  {dataUser.is_blocker ? (
+                    <View className="bg-red-300 px-4 py-2 m-4 rounded-full justify-center items-center">
+                      <Text className="text-sm text-center text-black">
+                        Anda telah memblokir pengguna ini. Buka blokir untuk mengirim pesan.
+                      </Text>
+                    </View>
+                  ) : (
+                    <View className="bg-red-300 px-4 py-2 m-4 rounded-full justify-center items-center">
+                      <Text className="text-sm text-center text-black">
+                        Anda diblokir oleh pengguna ini. Anda tidak dapat mengirim pesan.
+                      </Text>
+                    </View>
+                  )}
+                </>
+              ) : (
+                <View className="bg-white pt-2 pb-3 px-4" style={{}}>
+                  {
+                    VideoSend.path !== "" &&
+                    <View className="flex-row items-center">
+                      <View className="flex-1">
+                        <Video
+                          source={{ uri: VideoSend.path }}
+                          resizeMode="cover"
+                          className="rounded-md w-[100px] h-[100px]"
+                        />
                       </View>
+                      <TouchableOpacity onPress={() => {
+                        setVideoSend({
+                          path: "",
+                          mime: "",
+                          name: ""
+                        })
+                      }}>
+                        <Assets.IconTimes width={40} />
+                      </TouchableOpacity>
+                    </View>
+                  }
+
+                  {
+                    imageSend.path !== "" &&
+                    <View className="flex-row items-center">
+                      <View className="flex-1">
+                        <Image
+                          source={{ uri: imageSend.path }}
+                          width={100}
+                          height={100}
+                          className="rounded-md"
+                        />
+                      </View>
+                      <TouchableOpacity onPress={() => {
+                        setImageSend({
+                          path: "",
+                          base64: "",
+                          mime: ""
+                        })
+                      }}>
+                        <Assets.IconTimes width={40} />
+                      </TouchableOpacity>
+                    </View>
+                  }
+
+                  {
+                    fileSend.path !== "" &&
+                    <View className="flex-row items-center">
+                      <View className="flex-1 py-2">
+                        <Text numberOfLines={1} className="font-satoshi text-black font-medium">{fileSend.name}</Text>
+                      </View>
+                      <TouchableOpacity onPress={() => {
+                        setFileSend({
+                          path: "",
+                          name: "",
+                          mime: ""
+                        })
+                      }}>
+                        <Assets.IconTimes width={40} />
+                      </TouchableOpacity>
+                    </View>
+                  }
+
+                  {replyMessage && (
+                    <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2 mb-2">
+                      <View className="flex-1">
+                        <Text className="text-xs text-gray-500 mb-0.5">
+                          Replying to: {replyMessage.message.otm_id_user_from?.id === myUser ? 'You' : replyMessage.message.otm_id_user_from?.name || 'User'}
+                        </Text>
+                        {/* Render gambar jika ada di list_attachment */}
+                        {replyMessage.list_attachment && replyMessage.list_attachment.length > 0 && (
+                          <View style={{ flexDirection: 'row', gap: 4, marginBottom: 2 }}>
+                            {replyMessage.list_attachment
+                              .filter(att => att.type === "IMAGE" && att.url)
+                              .map((img, idx) => (
+                                <Image
+                                  key={img.id || idx}
+                                  source={{ uri: img.url }}
+                                  style={{ width: 40, height: 40, borderRadius: 6, marginRight: 4 }}
+                                  resizeMode="cover"
+                                />
+                              ))}
+                          </View>
+                        )}
+                        {/* Render text jika ada */}
+                        {replyMessage.message.data ? (
+                          <Text className="text-sm text-gray-800" numberOfLines={1}>
+                            {replyMessage.message.data}
+                          </Text>
+                        ) : null}
+                      </View>
+                      <TouchableOpacity onPress={() => setReplyMessage(null)}>
+                        <Assets.IconTimes width={18} height={18} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  <View className="flex-row items-center" style={{ marginBottom: keyboardShown ? insets.bottom + 2 : 0 }}>
+                    <View className="flex-1">
+                      <Components.FormInput
+
+                        isMultiLine={true}
+                        isBackground={true}
+                        value={text}
+                        onChange={setText}
+                        placeholder="Ketik pesan"
+                        customHeight={isEditing ? 80 : 40}
+                        sufix={
+                          <View className="flex flex-col gap-y-3">
+                            {
+                              !showChoseFile ?
+                                <TouchableOpacity onPress={() => setShowChoseFile(showChoseFile ? false : true)}>
+                                  <Assets.IconFile width={20} height={20} />
+                                </TouchableOpacity>
+                                :
+                                <TouchableOpacity onPress={() => setShowChoseFile(showChoseFile ? false : true)}>
+                                  <Assets.IconTimes width={20} height={20} />
+                                </TouchableOpacity>
+                            }
+                            {
+                              isEditing && (
+                                <TouchableOpacity
+                                  className=""
+                                  onPress={() => {
+                                    setIsEditing(false);
+                                    setEditMessage(null);
+                                    setText("");
+                                  }}
+                                >
+                                  <Assets.IconTimes width={20} height={20} />
+                                </TouchableOpacity>
+                              )
+                            }
+
+                          </View>
+                        }
+                      />
+
+                    </View>
+                    {isEditing ? (
+                      <>
+
+                        <TouchableOpacity
+                          className="pl-3 items-end justify-center"
+                          onPress={handleEditMessage}
+                        >
+                          <Assets.IconSend width={30} height={30} />
+
+                        </TouchableOpacity>
+                      </>
                     ) : (
-                      <Assets.IconMicOn width={30} height={30} />
+                      (
+                        <TouchableOpacity
+                          className="pl-3 items-end justify-center"
+                          onPress={
+                            (fileSend.path !== "" || imageSend.path !== "" || VideoSend.path !== "") ?
+                              () => sendChat()
+                              :
+                              (text !== "" && text.match(/^\s+$/) === null) ?
+                                () => sendChat()
+                                :
+                                () => { }
+                          }
+                        >
+                          {
+                            loadingSendChat ?
+                              <ActivityIndicator color={theme?.colors!["Primary/Main"] as string} size={30} />
+                              :
+                              <Assets.IconSend width={30} height={30} />
+                          }
+                        </TouchableOpacity>
+
+                      )
                     )}
-                  </TouchableOpacity>
-              )
-            )}
-          </View>
+                  </View>
 
-          {
-            showChoseFile &&
-            <View className="pt-5 pb-4 justify-center flex-row">
-              <TouchableOpacity onPress={() => choseImageCamera()} className="flex-1 justify-center items-center">
-                <Assets.IconCamera width={35} height={35} />
-                <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Kamera</Text>
-              </TouchableOpacity>
+                  {
+                    showChoseFile &&
+                    <View className="pt-5 pb-4 justify-center flex-row">
+                      <TouchableOpacity onPress={() => choseImageCamera()} className="flex-1 justify-center items-center">
+                        <Assets.IconCamera width={35} height={35} />
+                        <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Kamera</Text>
+                      </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => choseImageExplorer()} className="flex-1 justify-center items-center">
-                <Assets.IconGallery width={35} height={35} />
-                <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Gallery</Text>
-              </TouchableOpacity>
+                      <TouchableOpacity onPress={() => choseImageExplorer()} className="flex-1 justify-center items-center">
+                        <Assets.IconGallery width={35} height={35} />
+                        <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Gallery</Text>
+                      </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => choseVideoExplorer()} className="flex-1 justify-center items-center">
-                <Assets.IconVideoBlack width={35} height={35} />
-                <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Video</Text>
-              </TouchableOpacity>
+                      <TouchableOpacity onPress={() => choseVideoExplorer()} className="flex-1 justify-center items-center">
+                        <Assets.IconVideoBlack width={35} height={35} />
+                        <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Video</Text>
+                      </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => handleChoseFile()} className="flex-1 justify-center items-center">
-                <Assets.IconDocument width={35} height={35} />
-                <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">File</Text>
-              </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleChoseFile()} className="flex-1 justify-center items-center">
+                        <Assets.IconDocument width={35} height={35} />
+                        <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">File</Text>
+                      </TouchableOpacity>
+                    </View>
+                  }
+                </View>
+              )}
             </View>
-          }
-        </View>
-      </KeyboardAvoidingView>
 
-      <Components.ModalPinMessage
-        isVisible={showPinModal}
-        onClose={() => setShowPinModal(false)}
-        onPin={handlePinMessage}
-        pinMessage={pinMessage}
-        selectedPinDuration={selectedPinDuration}
-        setSelectedPinDuration={setSelectedPinDuration}
-      />
+            <Components.ModalPinMessage
+              isVisible={showPinModal}
+              onClose={() => setShowPinModal(false)}
+              onPin={handlePinMessage}
+              pinMessage={pinMessage}
+              selectedPinDuration={selectedPinDuration}
+              setSelectedPinDuration={setSelectedPinDuration}
+            />
 
-      <Modal
-        isVisible={showEditModal}
-        onBackdropPress={() => setShowEditModal(false)}
-        backdropOpacity={0.4}
-      >
-        <View style={{
-          backgroundColor: "#fff",
-          borderRadius: 20,
-          padding: 24,
-          alignItems: "flex-start"
-        }}>
-          <Text style={{
-            fontWeight: "bold",
-            fontSize: 20,
-            color: "#232B36",
-            marginBottom: 16,
-            alignSelf: "center"
-          }}>
-            Edit Pesan
-          </Text>
-          <Components.FormInput
-            isMultiLine={true}
-            isBackground={true}
-            value={editText}
-            onChange={setEditText}
-            placeholder="Edit pesan"
-          />
-          <View style={{ flexDirection: "row", alignSelf: "flex-end", marginTop: 16 }}>
-            <TouchableOpacity
-              style={{
-                backgroundColor: "#F3F4F6",
-                borderRadius: 8,
-                paddingVertical: 10,
-                paddingHorizontal: 24,
-                marginRight: 12
-              }}
-              onPress={() => setShowEditModal(false)}
+            <Modal
+              isVisible={showEditModal}
+              onBackdropPress={() => setShowEditModal(false)}
+              backdropOpacity={0.4}
             >
-              <Text style={{ color: "#232B36", fontWeight: "500", fontSize: 16 }}>Batal</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                backgroundColor: "#d32f2f",
-                borderRadius: 8,
-                paddingVertical: 10,
-                paddingHorizontal: 24
-              }}
-              onPress={handleEditMessage}
-            >
-              <Text style={{ color: "#fff", fontWeight: "500", fontSize: 16 }}>Simpan</Text>
-            </TouchableOpacity>
+              <View style={{
+                backgroundColor: "#fff",
+                borderRadius: 20,
+                padding: 24,
+                alignItems: "flex-start"
+              }}>
+                <Text style={{
+                  fontWeight: "bold",
+                  fontSize: 20,
+                  color: "#232B36",
+                  marginBottom: 16,
+                  alignSelf: "center"
+                }}>
+                  Edit Pesan
+                </Text>
+                <Components.FormInput
+                  isMultiLine={true}
+                  isBackground={true}
+                  value={editText}
+                  onChange={setEditText}
+                  placeholder="Edit pesan"
+                />
+                <View style={{ flexDirection: "row", alignSelf: "flex-end", marginTop: 16 }}>
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "#F3F4F6",
+                      borderRadius: 8,
+                      paddingVertical: 10,
+                      paddingHorizontal: 24,
+                      marginRight: 12
+                    }}
+                    onPress={() => setShowEditModal(false)}
+                  >
+                    <Text style={{ color: "#232B36", fontWeight: "500", fontSize: 16 }}>Batal</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "#d32f2f",
+                      borderRadius: 8,
+                      paddingVertical: 10,
+                      paddingHorizontal: 24
+                    }}
+                    onPress={handleEditMessage}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "500", fontSize: 16 }}>Simpan</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }
 

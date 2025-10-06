@@ -3,7 +3,6 @@ import { Component, FC, useEffect, useState } from "react"
 import Button from "../button"
 import Assets from "../../assets"
 import ImagePicker from 'react-native-image-crop-picker';
-import FormInput from "../formInput"
 import { uploadFile } from "../../helpers/uploadFile"
 import ModalsChoseImageFrom from "./modalsSelectImages"
 import Components from "../index"
@@ -150,7 +149,7 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
         <View className="flex-1">
           <ScrollView showsVerticalScrollIndicator={false}>
             <View className="my-2">
-              <FormInput
+              <Components.FormInput
                 label="Nama Produk"
                 placeholder="Masukan nama produk"
                 onChange={setnamaProduk}
@@ -194,7 +193,7 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
               </View>
             </View>
             <View className="my-2">
-              <FormInput
+              <Components.FormInput
                 label="Kategori"
                 placeholder="Pilih kategori"
                 onChange={setkategori}
@@ -210,7 +209,7 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
               />
             </View>
             <View className="my-2">
-              <FormInput
+              <Components.FormInput
                 label="Jenis"
                 placeholder="Pilih Jenis"
                 onChange={setjenis}
@@ -226,7 +225,7 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
               />
             </View>
             <View className="my-2">
-              <FormInput
+              <Components.FormInput
                 label="Deskripsi"
                 isMultiLine={true}
                 placeholder="Masukan deskripsi"
@@ -235,7 +234,7 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
               />
             </View>
             <View className="my-2">
-              <FormInput
+              <Components.FormInput
                 label="Harga"
                 inputType="number"
                 placeholder="Masukan harga"
@@ -244,7 +243,7 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
               />
             </View>
             <View className="my-2">
-              <FormInput
+              <Components.FormInput
                 label="Lokasi"
                 placeholder="Masukan lokasi"
                 onChange={setlocation}
@@ -252,7 +251,7 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
               />
             </View>
             <View className="my-2">
-              <FormInput
+              <Components.FormInput
                 label="Kuantitas"
                 inputType="number"
                 keyboardType="numeric"

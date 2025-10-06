@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity, Image, ToastAndroid, FlatList, RefreshControl, ActivityIndicator, TouchableWithoutFeedback } from "react-native"
 import { FC, Fragment, useEffect, useState } from "react"
-import FormInput from "../formInput"
 import Assets from "../../assets"
 import { listCommentRequest, postCommentRequest } from "../../services/home/posting"
 import { Comment } from "@pn/watch-is/model"
@@ -160,7 +159,7 @@ const ModalsComment: FC<ModalsCommentInterface> = ({ isShow, handleClose, hash }
             <Assets.ImageEmptyProfile width={40} height={40} />
           </View>
           <View className="flex-1">
-            <FormInput
+            <Components.FormInput
               isBackground={true}
               placeholder="Ketik komentar"
               value={comment}

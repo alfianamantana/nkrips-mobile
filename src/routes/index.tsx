@@ -14,7 +14,7 @@ import RegisterBusiness from '../pages/home/register-business'
 import DetailBusiness from '../pages/home/settings/register-jadab/detail'
 import PayJadab from '../pages/home/settings/register-jadab/pay'
 import { StatusBar } from "react-native";
-import { useSafeAreaInsets, SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -27,7 +27,9 @@ export type RootStackParamList = {
 const App = () => {
     return (
         <SafeAreaProvider>
-            <RouteApps />
+            <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={['left', 'right']}>
+                <RouteApps />
+            </SafeAreaView>
         </SafeAreaProvider>
     );
 }
@@ -136,6 +138,7 @@ const RouteApps = () => {
                         headerShown: false
                     })}
                 />
+
                 <Stack.Screen
                     name="DetailChat"
                     component={Pages.DetailChat}
@@ -148,7 +151,7 @@ const RouteApps = () => {
                         },
                         headerLeft: () => (
                             <View className="flex-row items-center">
-                                <TouchableOpacity className="pr-3" onPress={() => navigation.navigate("ListChat")}>
+                                <TouchableOpacity id='back-button' className="pr-3" onPress={() => navigation.navigate("ListChat")}>
                                     <Assets.IconArrowBack width={25} height={25} />
                                 </TouchableOpacity>
 
@@ -158,10 +161,24 @@ const RouteApps = () => {
                                             <View>
                                                 {
                                                     Object.keys(dataGruop).length > 0 &&
-                                                        dataGruop.logo !== null ?
+                                                        dataGruop.logo ?
                                                         <Image source={{ uri: dataGruop.logo }} width={30} height={30} className="rounded-full" />
                                                         :
-                                                        <Assets.ImageGroupEmptyProfile width={30} height={30} />
+                                                        (
+                                                            <View
+                                                                style={{
+                                                                    width: 30,
+                                                                    height: 30,
+                                                                    borderRadius: 9999,
+                                                                    backgroundColor: "#E4E4E7",
+                                                                    justifyContent: "center",
+                                                                    alignItems: "center"
+                                                                }}
+                                                            >
+                                                                <Image source={Assets.ImageNkrips} style={{ width: 30, height: 30 }} />
+                                                            </View>
+                                                        )
+
                                                 }
                                             </View>
                                             <View className="px-3">
@@ -788,251 +805,244 @@ const RouteApps = () => {
 }
 
 const TabNavigation = () => {
-    const insets = useSafeAreaInsets();
-
     const { setShowSideBar } = storeShowSideBar()
 
     return (
-        <Tab.Navigator
-            initialRouteName="Chat"
-            screenOptions={{
-                tabBarStyle: {
-                    minHeight: 65,
-                    paddingBottom: insets.bottom || 10, // gunakan insets.bottom
-                    paddingTop: 10,
-                }
-            }}
-        >
-            <Tab.Screen
-                name="Chat"
-                component={Pages.ListChat}
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={['left', 'right']}>
+            <Tab.Navigator
 
-                options={({ navigation }) => ({
-                    tabBarActiveTintColor: "#ED0226",
-                    tabBarInactiveTintColor: "#C2C2C2",
-                    tabBarLabel: "Pesan",
-                    title: "Pesan",
-                    headerTitleStyle: {
-                        fontFamily: "Satoshi",
-                        fontSize: 17,
-                        fontWeight: "500"
-                    },
-                    headerShadowVisible: false,
-                    tabBarLabelStyle: {
-                        fontFamily: "Satoshi",
-                        fontWeight: "500"
-                    },
-                    tabBarIcon: ({ focused }) => (
-                        <Fragment>
-                            {
-                                focused ?
-                                    <Assets.IconChatActive width={25} height={25} />
-                                    :
-                                    <Assets.IconChat width={25} height={25} />
-                            }
-                        </Fragment>
-                    ),
-                    headerLeft: () => (
-                        <TouchableOpacity className="pl-4 justify-center items-center" onPress={() => setShowSideBar()}>
-                            <Assets.IconMenu width={20} height={20} />
-                        </TouchableOpacity>
-                    ),
-                    headerRight: () => (
-                        <View className="items-center flex-row">
-                            {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
-                                <Assets.IconNotif width={20} height={20} />
-                            </TouchableOpacity> */}
-                            <TouchableOpacity className="pr-4 justify-center items-center">
-                                <Assets.IconSearch width={20} height={20} />
+                initialRouteName="Chat"
+            >
+                <Tab.Screen
+                    name="Chat"
+                    component={Pages.ListChat}
+                    options={({ navigation }) => ({
+                        tabBarActiveTintColor: "#ED0226",
+                        tabBarInactiveTintColor: "#C2C2C2",
+                        tabBarLabel: "Pesan",
+                        title: "Pesan",
+                        headerTitleStyle: {
+                            fontFamily: "Satoshi",
+                            fontSize: 17,
+                            fontWeight: "500"
+                        },
+                        headerShadowVisible: false,
+                        tabBarLabelStyle: {
+                            fontFamily: "Satoshi",
+                            fontWeight: "500"
+                        },
+                        tabBarIcon: ({ focused }) => (
+                            <Fragment>
+                                {
+                                    focused ?
+                                        <Assets.IconChatActive width={25} height={25} />
+                                        :
+                                        <Assets.IconChat width={25} height={25} />
+                                }
+                            </Fragment>
+                        ),
+                        headerLeft: () => (
+                            <TouchableOpacity className="pl-4 justify-center items-center" onPress={() => setShowSideBar()}>
+                                <Assets.IconMenu width={20} height={20} />
                             </TouchableOpacity>
-                        </View>
-                    )
-                })}
-            />
-            <Tab.Screen
-                name="Feed"
-                component={Pages.Feed}
-                initialParams={{ type: "" }}
-                options={({ navigation }) => ({
-                    tabBarActiveTintColor: "#ED0226",
-                    tabBarInactiveTintColor: "#C2C2C2",
-                    tabBarLabel: "Kabar",
-                    title: "Kabar",
-                    headerTitleStyle: {
-                        fontFamily: "Satoshi",
-                        fontSize: 17,
-                        fontWeight: "500"
-                    },
-                    tabBarLabelStyle: {
-                        fontFamily: "Satoshi",
-                        fontWeight: "500"
-                    },
+                        ),
+                        headerRight: () => (
+                            <View className="items-center flex-row">
+                                {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
+                                        <Assets.IconNotif width={20} height={20} />
+                                    </TouchableOpacity> */}
+                                <TouchableOpacity className="pr-4 justify-center items-center">
+                                    <Assets.IconSearch width={20} height={20} />
+                                </TouchableOpacity>
+                            </View>
+                        )
+                    })}
+                />
+                <Tab.Screen
+                    name="Feed"
+                    component={Pages.Feed}
+                    initialParams={{ type: "" }}
+                    options={({ navigation }) => ({
+                        tabBarActiveTintColor: "#ED0226",
+                        tabBarInactiveTintColor: "#C2C2C2",
+                        tabBarLabel: "Kabar",
+                        title: "Kabar",
+                        headerTitleStyle: {
+                            fontFamily: "Satoshi",
+                            fontSize: 17,
+                            fontWeight: "500"
+                        },
+                        tabBarLabelStyle: {
+                            fontFamily: "Satoshi",
+                            fontWeight: "500"
+                        },
 
-                    tabBarIcon: ({ focused }) => (
-                        <Fragment>
-                            {
-                                focused ?
-                                    <Assets.IconFeedActive width={25} height={25} />
-                                    :
-                                    <Assets.IconFeed width={25} height={25} />
-                            }
-                        </Fragment>
-                    ),
-                    headerLeft: () => (
-                        <TouchableOpacity className="pl-4 justify-center items-center" onPress={() => setShowSideBar()}>
-                            <Assets.IconMenu width={20} height={20} />
-                        </TouchableOpacity>
-                    ),
-                    headerRight: () => (
-                        <View className="items-center flex-row">
-                            {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
-                                <Assets.IconNotif width={20} height={20} />
-                            </TouchableOpacity> */}
-                            <TouchableOpacity className="pr-4 justify-center items-center">
-                                <Assets.IconSearch width={20} height={20} />
+                        tabBarIcon: ({ focused }) => (
+                            <Fragment>
+                                {
+                                    focused ?
+                                        <Assets.IconFeedActive width={25} height={25} />
+                                        :
+                                        <Assets.IconFeed width={25} height={25} />
+                                }
+                            </Fragment>
+                        ),
+                        headerLeft: () => (
+                            <TouchableOpacity className="pl-4 justify-center items-center" onPress={() => setShowSideBar()}>
+                                <Assets.IconMenu width={20} height={20} />
                             </TouchableOpacity>
-                        </View>
-                    )
-                })}
-            />
-            <Tab.Screen
-                name="Video"
-                component={Pages.Feed}
-                initialParams={{ type: PostingType.VIDEO }}
-                options={({ navigation }) => ({
-                    tabBarActiveTintColor: "#ED0226",
-                    tabBarInactiveTintColor: "#C2C2C2",
-                    tabBarLabel: "Video",
-                    title: "Video",
-                    headerTitleStyle: {
-                        fontFamily: "Satoshi",
-                        fontSize: 17,
-                        fontWeight: "500"
-                    },
-                    tabBarLabelStyle: {
-                        fontFamily: "Satoshi",
-                        fontWeight: "500"
-                    },
+                        ),
+                        headerRight: () => (
+                            <View className="items-center flex-row">
+                                {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
+                                        <Assets.IconNotif width={20} height={20} />
+                                    </TouchableOpacity> */}
+                                <TouchableOpacity className="pr-4 justify-center items-center">
+                                    <Assets.IconSearch width={20} height={20} />
+                                </TouchableOpacity>
+                            </View>
+                        )
+                    })}
+                />
+                <Tab.Screen
+                    name="Video"
+                    component={Pages.Feed}
+                    initialParams={{ type: PostingType.VIDEO }}
+                    options={({ navigation }) => ({
+                        tabBarActiveTintColor: "#ED0226",
+                        tabBarInactiveTintColor: "#C2C2C2",
+                        tabBarLabel: "Video",
+                        title: "Video",
+                        headerTitleStyle: {
+                            fontFamily: "Satoshi",
+                            fontSize: 17,
+                            fontWeight: "500"
+                        },
+                        tabBarLabelStyle: {
+                            fontFamily: "Satoshi",
+                            fontWeight: "500"
+                        },
 
-                    tabBarIcon: ({ focused }) => (
-                        <Fragment>
-                            {
-                                focused ?
-                                    <Assets.IconVideoActive width={25} height={25} />
-                                    :
-                                    <Assets.IconVideo width={25} height={25} />
-                            }
-                        </Fragment>
-                    ),
-                    headerLeft: () => (
-                        <TouchableOpacity className="pl-4 justify-center items-center" onPress={() => setShowSideBar()}>
-                            <Assets.IconMenu width={20} height={20} />
-                        </TouchableOpacity>
-                    ),
-                    headerRight: () => (
-                        <View className="items-center flex-row">
-                            {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
-                                <Assets.IconNotif width={20} height={20} />
-                            </TouchableOpacity> */}
-                            <TouchableOpacity
+                        tabBarIcon: ({ focused }) => (
+                            <Fragment>
+                                {
+                                    focused ?
+                                        <Assets.IconVideoActive width={25} height={25} />
+                                        :
+                                        <Assets.IconVideo width={25} height={25} />
+                                }
+                            </Fragment>
+                        ),
+                        headerLeft: () => (
+                            <TouchableOpacity className="pl-4 justify-center items-center" onPress={() => setShowSideBar()}>
+                                <Assets.IconMenu width={20} height={20} />
+                            </TouchableOpacity>
+                        ),
+                        headerRight: () => (
+                            <View className="items-center flex-row">
+                                {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
+                                        <Assets.IconNotif width={20} height={20} />
+                                    </TouchableOpacity> */}
+                                <TouchableOpacity
 
-                                className="pr-4 justify-center items-center">
-                                <Assets.IconSearch width={20} height={20} />
+                                    className="pr-4 justify-center items-center">
+                                    <Assets.IconSearch width={20} height={20} />
+                                </TouchableOpacity>
+                            </View>
+                        )
+                    })}
+                />
+                <Tab.Screen
+                    name="Shop"
+                    component={Pages.Feed}
+                    initialParams={{ type: PostingType.SELL_PRODUCT }}
+                    options={({ navigation }) => ({
+                        tabBarActiveTintColor: "#ED0226",
+                        tabBarInactiveTintColor: "#C2C2C2",
+                        tabBarLabel: "Jual Beli",
+                        title: "Jual Beli",
+                        headerTitleStyle: {
+                            fontFamily: "Satoshi",
+                            fontSize: 17,
+                            fontWeight: "500"
+                        },
+                        tabBarLabelStyle: {
+                            fontFamily: "Satoshi",
+                            fontWeight: "500"
+                        },
+                        tabBarIcon: ({ focused }) => (
+                            <Fragment>
+                                {
+                                    focused ?
+                                        <Assets.IconShopActive width={25} height={25} />
+                                        :
+                                        <Assets.IconShop width={25} height={25} />
+                                }
+                            </Fragment>
+                        ),
+                        headerLeft: () => (
+                            <TouchableOpacity className="pl-4 justify-center items-center" onPress={() => setShowSideBar()}>
+                                <Assets.IconMenu width={20} height={20} />
                             </TouchableOpacity>
-                        </View>
-                    )
-                })}
-            />
-            <Tab.Screen
-                name="Shop"
-                component={Pages.Feed}
-                initialParams={{ type: PostingType.SELL_PRODUCT }}
-                options={({ navigation }) => ({
-                    tabBarActiveTintColor: "#ED0226",
-                    tabBarInactiveTintColor: "#C2C2C2",
-                    tabBarLabel: "Jual Beli",
-                    title: "Jual Beli",
-                    headerTitleStyle: {
-                        fontFamily: "Satoshi",
-                        fontSize: 17,
-                        fontWeight: "500"
-                    },
-                    tabBarLabelStyle: {
-                        fontFamily: "Satoshi",
-                        fontWeight: "500"
-                    },
-                    tabBarIcon: ({ focused }) => (
-                        <Fragment>
-                            {
-                                focused ?
-                                    <Assets.IconShopActive width={25} height={25} />
-                                    :
-                                    <Assets.IconShop width={25} height={25} />
-                            }
-                        </Fragment>
-                    ),
-                    headerLeft: () => (
-                        <TouchableOpacity className="pl-4 justify-center items-center" onPress={() => setShowSideBar()}>
-                            <Assets.IconMenu width={20} height={20} />
-                        </TouchableOpacity>
-                    ),
-                    headerRight: () => (
-                        <View className="items-center flex-row">
-                            {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
-                                <Assets.IconNotif width={20} height={20} />
-                            </TouchableOpacity> */}
-                            <TouchableOpacity className="pr-4 justify-center items-center">
-                                <Assets.IconSearch width={20} height={20} />
+                        ),
+                        headerRight: () => (
+                            <View className="items-center flex-row">
+                                {/* <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
+                                        <Assets.IconNotif width={20} height={20} />
+                                    </TouchableOpacity> */}
+                                <TouchableOpacity className="pr-4 justify-center items-center">
+                                    <Assets.IconSearch width={20} height={20} />
+                                </TouchableOpacity>
+                            </View>
+                        )
+                    })}
+                />
+                <Tab.Screen
+                    name="Call"
+                    component={Pages.ListCall}
+                    options={({ navigation }) => ({
+                        tabBarActiveTintColor: "#ED0226",
+                        tabBarInactiveTintColor: "#C2C2C2",
+                        tabBarLabel: "Panggilan",
+                        title: "Panggilan",
+                        headerTitleStyle: {
+                            fontFamily: "Satoshi",
+                            fontSize: 17,
+                            fontWeight: "500"
+                        },
+                        tabBarLabelStyle: {
+                            fontFamily: "Satoshi",
+                            fontWeight: "500"
+                        },
+                        tabBarIcon: ({ focused }) => (
+                            <Fragment>
+                                {
+                                    focused ?
+                                        <Assets.IconCallActive width={25} height={25} />
+                                        :
+                                        <Assets.IconCall width={25} height={25} />
+                                }
+                            </Fragment>
+                        ),
+                        headerLeft: () => (
+                            <TouchableOpacity className="pl-4 justify-center items-center" onPress={() => setShowSideBar()}>
+                                <Assets.IconMenu width={20} height={20} />
                             </TouchableOpacity>
-                        </View>
-                    )
-                })}
-            />
-            <Tab.Screen
-                name="Call"
-                component={Pages.ListCall}
-                options={({ navigation }) => ({
-                    tabBarActiveTintColor: "#ED0226",
-                    tabBarInactiveTintColor: "#C2C2C2",
-                    tabBarLabel: "Panggilan",
-                    title: "Panggilan",
-                    headerTitleStyle: {
-                        fontFamily: "Satoshi",
-                        fontSize: 17,
-                        fontWeight: "500"
-                    },
-                    tabBarLabelStyle: {
-                        fontFamily: "Satoshi",
-                        fontWeight: "500"
-                    },
-                    tabBarIcon: ({ focused }) => (
-                        <Fragment>
-                            {
-                                focused ?
-                                    <Assets.IconCallActive width={25} height={25} />
-                                    :
-                                    <Assets.IconCall width={25} height={25} />
-                            }
-                        </Fragment>
-                    ),
-                    headerLeft: () => (
-                        <TouchableOpacity className="pl-4 justify-center items-center" onPress={() => setShowSideBar()}>
-                            <Assets.IconMenu width={20} height={20} />
-                        </TouchableOpacity>
-                    ),
-                    headerRight: () => (
-                        <View className="items-center flex-row">
-                            <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
-                                <Assets.IconNotif width={20} height={20} />
-                            </TouchableOpacity>
-                            <TouchableOpacity className="pr-4 justify-center items-center">
-                                <Assets.IconSearch width={20} height={20} />
-                            </TouchableOpacity>
-                        </View>
-                    )
-                })}
-            />
-        </Tab.Navigator>
+                        ),
+                        headerRight: () => (
+                            <View className="items-center flex-row">
+                                <TouchableOpacity onPress={() => navigation.navigate("Notification")} className="pr-4 justify-center items-center">
+                                    <Assets.IconNotif width={20} height={20} />
+                                </TouchableOpacity>
+                                <TouchableOpacity className="pr-4 justify-center items-center">
+                                    <Assets.IconSearch width={20} height={20} />
+                                </TouchableOpacity>
+                            </View>
+                        )
+                    })}
+                />
+            </Tab.Navigator>
+        </SafeAreaView>
     )
 }
 

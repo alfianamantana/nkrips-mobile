@@ -131,6 +131,8 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
       listPost()
       // navigation.navigate("Home", { screen: "Feed" })
     } catch (err) {
+      console.log("Error delete post: ", err);
+
       ToastAndroid.show("Gagal menghapus postingan", ToastAndroid.SHORT)
     }
   }
@@ -144,19 +146,20 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
     </View>
   }
 
-
-
   return (
     <View className="my-1 bg-white p-4">
       <View className="flex-row items-center">
         <TouchableOpacity
           className="flex-row items-center w-10/12"
           onPress={() =>
-            navigation.navigate("PostProfile", { username: dataPost?.posting.otm_id_user.username! })
+            navigation.navigate("PostProfile", {
+              username: dataPost?.posting.otm_id_user.username!,
+              isMyProfile: dataPost?.posting?.otm_id_user.id === user?.id ? true : false
+            })
           }>
           <View className="pr-3">
             {
-              dataPost?.posting?.otm_id_user?.profile_picture_url !== null ?
+              dataPost?.posting?.otm_id_user?.profile_picture_url ?
                 <Image resizeMode="contain" source={{ uri: dataPost?.posting?.otm_id_user?.profile_picture_url }} className="w-[50px] h-[50px] rounded-full" />
                 :
                 <Assets.ImageEmptyProfile width={50} height={50} />
@@ -233,24 +236,28 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
           <View className="my-1">
             {
               dataPost.list_video?.length > 0 &&
-              dataPost.list_video.map((postVideo, p) => (
-                <View key={p}>
-                  {
-                    postVideo.caption !== "" &&
-                    <View className="mb-2">
-                      <Text className="font-satoshi text-black">{postVideo.caption}</Text>
-                    </View>
-                  }
+              dataPost.list_video.map((postVideo, p) => {
+                return (
+                  <View key={p}>
+                    {
+                      postVideo.caption !== "" &&
+                      <View className="mb-2">
+                        <Text className="font-satoshi text-black">{postVideo.caption}</Text>
+                      </View>
+                    }
 
-                  <VideoPlayer
-                    autoPlay={false}
-                    showOnStart={false}
-                    paused={true}
-                    source={{ uri: postVideo.video_url }}
-                    className="my-1 bg-gray-100 rounded-lg h-[305px]"
-                  />
-                </View>
-              ))
+                    <VideoPlayer
+                      autoPlay={false}
+                      showOnStart={false}
+                      paused={true}
+                      source={{ uri: postVideo.video_url }}
+                      className="my-1 bg-gray-100 rounded-lg h-[305px]"
+                    />
+                  </View>
+                )
+
+              }
+              )
             }
           </View>
         }
@@ -334,7 +341,6 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
                     {
                       postSell?.posting_product.name !== "" &&
                       <View className="my-2">
-                        {/* ...lanjutan detail produk seperti sebelumnya... */}
                         <View>
                           <Text className="font-satoshi text-black text-sm">{postSell?.posting_product.name}</Text>
                         </View>

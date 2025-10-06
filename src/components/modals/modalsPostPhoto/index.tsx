@@ -3,7 +3,6 @@ import { FC, Fragment, useEffect, useState } from "react"
 import Button from "../../button"
 import Assets from "../../../assets"
 import ImagePicker from 'react-native-image-crop-picker';
-import FormInput from "../../formInput"
 import { uploadFile } from "../../../helpers/uploadFile"
 import ModalsChoseImageFrom from "../modalsSelectImages"
 import Components from "../.."
@@ -113,7 +112,7 @@ const ModalsPostPhoto: FC<ModalsPostPhotoInterface> = ({ isShow, handleClose, on
                                 </TouchableOpacity>
 
                                 <View className="mt-4">
-                                    <FormInput
+                                    <Components.FormInput
                                         placeholder="Masukan deskripsi gambar..."
                                         onChange={setDescPhoto}
                                         value={descPhoto}

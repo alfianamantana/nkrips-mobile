@@ -4,7 +4,6 @@ import RadioButton from "../../radioButton"
 import Button from "../../button"
 import { kelRequest } from "../../../services/adm"
 import { Schema } from "@pn/watch-is/driver"
-import FormInput from "../../formInput"
 import LoadMore from "../../loadMore"
 import Components from "../.."
 
@@ -74,7 +73,7 @@ const ModalsKelurahan: FC<ModalsKelurahanInterface> = ({ isShow, handleShowHideM
         <Components.ModalContainerBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
             <View className="h-[50vh]">
                 <View className="mb-3">
-                    <FormInput
+                    <Components.FormInput
                         value={keywords}
                         onChange={setKeywords}
                         placeholder="Cari ..."

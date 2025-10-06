@@ -1,13 +1,15 @@
 import axios from "axios"
 import moment from "moment-timezone";
+import { BASE_URL } from "@env"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
-
-function generateFileName(fileType: string) {
+function generateFileName(fileType: string | undefined) {
     let ext = "dat";
-    if (fileType.includes("image/")) ext = fileType.split("/")[1];
-    else if (fileType.includes("video/")) ext = fileType.split("/")[1];
-    else if (fileType === "application/pdf") ext = "pdf";
-
+    if (typeof fileType === "string") {
+        if (fileType.includes("image/")) ext = fileType.split("/")[1];
+        else if (fileType.includes("video/")) ext = fileType.split("/")[1];
+        else if (fileType === "application/pdf") ext = "pdf";
+    }
     return moment().format("YYYYMMDD_HHmmss") + "." + ext;
 }
 
@@ -25,7 +27,21 @@ export const uploadFile = async (fileUri: string, fileType: string) => {
         data: formData,
         headers: {
             "Authorization": "hseo",
-            "Content-Type": "multipart/form-data", // JANGAN set ini, biarkan axios/FormData yang set boundary-nya
+            "Content-Type": "multipart/form-data",
         }
+    })
+}
+
+export const uploadFile2 = async (path: string, data: any) => {
+    const Token = await AsyncStorage.getItem("token")
+    return await axios({
+        url: BASE_URL + path,
+        method: "POST",
+        data: data,
+        headers: {
+            "Authorization": `Bearer ${Token}`,
+            "Content-Type": "multipart/form-data"
+        },
+        timeout: 60000
     })
 }

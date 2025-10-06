@@ -42,7 +42,7 @@ const AjukanModalForm: React.FC<AjukanModalFormProps> = ({ data, setData }) => {
             Rp
           </Text>
           <TextInput
-            className=""
+            className="text-black"
             keyboardType="numeric"
             value={String(data.jumlah_modal)}
             placeholder="modal usaha"
@@ -54,7 +54,7 @@ const AjukanModalForm: React.FC<AjukanModalFormProps> = ({ data, setData }) => {
       <View className="w-full">
         <Text className="mb-1 text-base text-neutral-900">Rencana <Text className="text-red-500">*</Text></Text>
         <TextInput
-          className="border border-neutral-300 rounded px-3 py-3"
+          className="border border-neutral-300 rounded px-3 py-3 text-black"
           value={data.rencana}
           placeholder="rencana"
           onChangeText={(text) => setData({ ...data, rencana: text })}
@@ -67,7 +67,7 @@ const AjukanModalForm: React.FC<AjukanModalFormProps> = ({ data, setData }) => {
         <View className="flex-row items-center border border-neutral-300 rounded px-2 py-2 justify-between">
           <Text>Rp</Text>
           <TextInput
-            className="flex-1 ml-2"
+            className="flex-1 ml-2 text-black"
             keyboardType="numeric"
             value={String(data.estimasi_untung)}
             placeholder="modal usaha"
@@ -81,7 +81,7 @@ const AjukanModalForm: React.FC<AjukanModalFormProps> = ({ data, setData }) => {
         <Text className="mb-1 text-base text-neutral-900">Bagi Hasil <Text className="text-red-500">*</Text></Text>
         <View className="flex-row items-center border border-neutral-300 rounded px-2 py-2 justify-between">
           <TextInput
-            className=""
+            className="text-black"
             keyboardType="numeric"
             value={String(data.bagi_hasil)}
             placeholder="modal usaha"
@@ -94,7 +94,7 @@ const AjukanModalForm: React.FC<AjukanModalFormProps> = ({ data, setData }) => {
       <View className="w-full">
         <Text className="mb-1 text-base text-neutral-900">Aset <Text className="text-red-500">*</Text></Text>
         <TextInput
-          className="border border-neutral-300 rounded px-3 py-3"
+          className="border border-neutral-300 rounded px-3 py-3 text-black"
           value={data.aset}
           placeholder="aset yang dimiliki"
           onChangeText={(text) => setData({ ...data, aset: text })}
@@ -124,7 +124,7 @@ const AjukanModalForm: React.FC<AjukanModalFormProps> = ({ data, setData }) => {
       <View className="w-full">
         <Text className="mb-1 text-base text-neutral-900">Rekomendasi <Text className="text-red-500">*</Text></Text>
         <TextInput
-          className="border border-neutral-300 rounded px-3 py-3"
+          className="border border-neutral-300 rounded px-3 py-3 text-black"
           value={searchValue}
           placeholder="Cari rekomendasi"
           onChangeText={setSearchValue}
@@ -151,7 +151,7 @@ const AjukanModalForm: React.FC<AjukanModalFormProps> = ({ data, setData }) => {
       <View className="w-full">
         <Text className="mb-1 text-base text-neutral-900">Nomor Rekening <Text className="text-red-500">*</Text></Text>
         <TextInput
-          className="border border-neutral-300 rounded px-3 py-3"
+          className="border border-neutral-300 rounded px-3 py-3 text-black"
           value={data.nomor_rekening}
           placeholder="nomor rekening"
           keyboardType="numeric"
@@ -164,7 +164,7 @@ const AjukanModalForm: React.FC<AjukanModalFormProps> = ({ data, setData }) => {
       <View className="w-full">
         <Text className="mb-1 text-base text-neutral-900">Pemilik Rekening <Text className="text-red-500">*</Text></Text>
         <TextInput
-          className="border border-neutral-300 rounded px-3 py-3"
+          className="border border-neutral-300 rounded px-3 py-3 text-black"
           value={data.pemilik_rekening}
           placeholder="nama pemilik rekening"
           onChangeText={(text) => setData({ ...data, pemilik_rekening: text })}

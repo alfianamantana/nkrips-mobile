@@ -70,6 +70,7 @@ const ListChat: FC<ListChatInterface> = ({ isLast = false, data }) => {
   const [nameChat, setNameChat] = useState("")
   const [groupChat, setGroupChat] = useState(false)
 
+
   const detailChat = async () => {
     let public_hash = ""
     let isCommunity = false
@@ -125,8 +126,9 @@ const ListChat: FC<ListChatInterface> = ({ isLast = false, data }) => {
     <TouchableOpacity onPress={() => detailChat()} className={`flex-row w-12/12 items-center my-1 pb-3 ${isLast ? "border-b border-b-gray-100" : ""}`}>
       <View className="pr-3">
         {
-          groupChat ?
-            <View
+          groupChat && data.message.otm_id_community_to?.logo ? (
+            <Image
+              source={{ uri: data.message.otm_id_community_to?.logo }}
               style={{
                 width: 54,
                 height: 54,
@@ -136,12 +138,84 @@ const ListChat: FC<ListChatInterface> = ({ isLast = false, data }) => {
                 justifyContent: "center",
                 overflow: "hidden",
               }}
-            >
-              <Assets.ImageGroupEmptyProfile width={60} height={60} />
-            </View>
-            : (
-              <Assets.ImageEmptyProfile width={60} height={60} />
-            )
+            />
+          ) :
+            groupChat && !data?.message?.otm_id_community_to?.logo ?
+              <View
+                style={{
+                  width: 54,
+                  height: 54,
+                  borderRadius: 27,
+                  backgroundColor: "#F3F4F6",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                }}
+              >
+                <Image source={Assets.ImageNkrips} style={{ width: 60, height: 60 }} />
+              </View>
+              :
+              data.message.otm_id_user_to.public_hash === myPublicHash ?
+                data.message.otm_id_user_from?.profile_picture_url ?
+                  (
+                    <Image
+                      source={{ uri: data.message.otm_id_user_from?.profile_picture_url }}
+                      style={{
+                        width: 54,
+                        height: 54,
+                        borderRadius: 27,
+                        backgroundColor: "#F3F4F6",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                      }}
+                    />
+                  ) :
+                  (
+                    <View
+                      style={{
+                        width: 54,
+                        height: 54,
+                        borderRadius: 27,
+                        backgroundColor: "#F3F4F6",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Image source={Assets.ImageNkrips} style={{ width: 60, height: 60 }} />
+                    </View>
+                  )
+                :
+                data.message.otm_id_user_to?.profile_picture_url ?
+                  (
+                    <Image
+                      source={{ uri: data.message.otm_id_user_to?.profile_picture_url }}
+                      style={{
+                        width: 54,
+                        height: 54,
+                        borderRadius: 27,
+                        backgroundColor: "#F3F4F6",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                      }}
+                    />
+                  ) : (
+                    <View
+                      style={{
+                        width: 54,
+                        height: 54,
+                        borderRadius: 27,
+                        backgroundColor: "#F3F4F6",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Image source={Assets.ImageNkrips} style={{ width: 60, height: 60 }} />
+                    </View>
+                  )
         }
       </View>
       <View className="flex-1">

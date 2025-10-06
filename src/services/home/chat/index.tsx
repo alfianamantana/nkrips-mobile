@@ -156,7 +156,7 @@ export const postChatRequest = async (
     if (type !== null) {
         postMessage["attachment"] = {
             type: type,
-            filename: filename
+            filename: filename,
         }
     }
 
