@@ -929,7 +929,7 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
                     </View>
                   )}
 
-                  <View className="flex-row items-center" style={{ marginBottom: keyboardShown ? insets.bottom + 2 : 0 }}>
+                  <View className="flex-row items-center" style={{ marginBottom: keyboardShown ? insets.bottom * 2 : 0 }}>
                     <View className="flex-1">
                       <Components.FormInput
 

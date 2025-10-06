@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, ToastAndroid, Dimensions } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ToastAndroid, Dimensions, Image } from "react-native";
 import Assets from "../../assets";
 import { PostingType, VoteType } from "@pn/watch-is/model";
 import { getVoteRequest, voteRequest } from "../../services/home/posting";
 import VideoPlayer from 'react-native-video-controls';
-import AutoHeightImage from 'react-native-auto-height-image';
 import Components from "../../components";
 
 interface DetailPostScreenProps {
@@ -70,10 +69,9 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
               <Text className="text-lg font-bold text-neutral-800">{postImage.caption}</Text>
             </View>
           )}
-          <AutoHeightImage
-            width={Dimensions.get('window').width - 30}
+          <Image
             source={{ uri: postImage.image_url }}
-            style={{ borderRadius: 12, backgroundColor: "#f4f4f4" }}
+            style={{ width: Dimensions.get('window').width - 30, resizeMode: 'contain', borderRadius: 12, backgroundColor: "#f4f4f4" }}
           />
         </View>
       ));
@@ -135,10 +133,9 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
           <View key={p}>
             {totalImages > 0 && (
               <View>
-                <AutoHeightImage
-                  width={Dimensions.get('window').width - 30}
+                <Image
                   source={{ uri: images[imageIndex].image_url }}
-                  style={{ borderRadius: 12, backgroundColor: "#f4f4f4" }}
+                  style={{ width: Dimensions.get('window').width - 30, resizeMode: 'contain', borderRadius: 12, backgroundColor: "#f4f4f4" }}
                 />
                 {totalImages > 1 && (
                   <View className="flex-row justify-center items-center mt-2 gap-4">

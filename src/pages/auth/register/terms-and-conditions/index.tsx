@@ -6,24 +6,24 @@ import resolveConfig from 'tailwindcss/resolveConfig'
 import tailwindConfig from "../../../../../tailwind.config"
 import { acceptSNKRequest } from "../../../../services/auth/register";
 
-const {theme} = resolveConfig(tailwindConfig)
+const { theme } = resolveConfig(tailwindConfig)
 
 interface TermsAndConditionInterface {
-    navigation : any,
-    route : any
+    navigation: any,
+    route: any
 }
 
-const TermsAndCondition:FC<TermsAndConditionInterface> = ({ navigation, route }) => {
-    const { isRegister }                      = route.params
+const TermsAndCondition: FC<TermsAndConditionInterface> = ({ navigation, route }) => {
+    const { isRegister } = route.params
     const [toggleCheckBox, setToggleCheckBox] = useState(false)
-    const [loading, setLoading]               = useState(false)
+    const [loading, setLoading] = useState(false)
 
     const pressRegister = async () => {
         setLoading(true)
         try {
             await acceptSNKRequest()
             navigation.navigate("ListChat")
-            
+
         } catch (error) {
             ToastAndroid.show("Gagal menyetujui syarat dan ketentuan !", ToastAndroid.SHORT)
 

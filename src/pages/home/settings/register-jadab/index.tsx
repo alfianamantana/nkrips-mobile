@@ -143,7 +143,7 @@ const RegisterJadab: FC<RegisterJadabInterface> = ({ navigation }) => {
             setActiveTab(2)
 
         } catch (error) {
-            ToastAndroid.show("Gagal melakukan daftar JADAB tahap 2 !", ToastAndroid.SHORT)
+            ToastAndroid.show(error.response?.data || "Gagal melakukan daftar JADAB tahap 2!", ToastAndroid.SHORT)
         } finally {
             setLoading(false)
         }

@@ -13,7 +13,6 @@ import VideoPlayer from 'react-native-video-controls';
 import moment from "moment-timezone"
 import { getVoteRequest, voteRequest } from "../services/home/posting"
 import { storeShowModalsComment } from "../store"
-import AutoHeightImage from 'react-native-auto-height-image';
 import ContextMenu from "react-native-context-menu-view"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { BASE_URL } from "@env";
@@ -160,9 +159,25 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
           <View className="pr-3">
             {
               dataPost?.posting?.otm_id_user?.profile_picture_url ?
-                <Image resizeMode="contain" source={{ uri: dataPost?.posting?.otm_id_user?.profile_picture_url }} className="w-[50px] h-[50px] rounded-full" />
+                <Image
+                  resizeMode="contain"
+                  source={{ uri: dataPost?.posting?.otm_id_user?.profile_picture_url }}
+                  className="w-[50px] h-[50px] rounded-full"
+                />
                 :
-                <Assets.ImageEmptyProfile width={50} height={50} />
+                <View
+                  style={{
+                    width: 54,
+                    height: 54,
+                    borderRadius: 27,
+                    backgroundColor: "#F3F4F6",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Image source={Assets.ImageNkrips} style={{ width: 50, height: 50 }} />
+                </View>
             }
           </View>
           <View className="flex-1">
@@ -215,11 +230,11 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
                       </View>
                     }
 
-                    <View>
-                      <AutoHeightImage
+                    <View id="image-post">
+                      <Image
                         key={p}
-                        width={Dimensions.get('window').width - 30}
-                        source={{ uri: postImage.image_url }}
+                        source={{ uri: postImage?.image_url }}
+                        style={{ width: Dimensions.get('window').width - 30, height: 200, resizeMode: 'contain' }}
                         className="my-1 bg-gray-100 rounded-lg"
                       />
                     </View>
@@ -305,9 +320,9 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
                   <View key={p}>
                     {totalImages > 0 && (
                       <View>
-                        <AutoHeightImage
-                          width={Dimensions.get('window').width - 30}
+                        <Image
                           source={{ uri: images[imageIndex].image_url }}
+                          style={{ width: Dimensions.get('window').width - 30, height: 200, resizeMode: 'contain' }}
                           className="my-1 bg-gray-100 rounded-lg"
                         />
                         {totalImages > 1 && (

@@ -75,8 +75,19 @@ const SideBar = () => {
                   Object.keys(dataUser).length > 0 &&
                     dataUser.profile_picture_url ?
                     <Image source={{ uri: dataUser.profile_picture_url }} width={70} height={70} className="rounded-full" />
-                    :
-                    <Assets.ImageEmptyProfile width={70} height={70} />
+                    : <View
+                      style={{
+                        width: 54,
+                        height: 54,
+                        borderRadius: 27,
+                        backgroundColor: "#F3F4F6",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Image source={Assets.ImageNkrips} style={{ width: 60, height: 60 }} />
+                    </View>
                 }
               </View>
             </View>

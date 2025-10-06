@@ -1,9 +1,39 @@
-import React from "react";
-import { ScrollView, Text, View } from "react-native";
+import React, { useState } from "react";
+import { ScrollView, Text, ToastAndroid, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import CheckBox from '@react-native-community/checkbox';
+import { acceptSNKRequest } from "../../../services/auth/register";
+import Components from "../../../components";
+import resolveConfig from 'tailwindcss/resolveConfig'
+import tailwindConfig from "../../../../tailwind.config";
 
-const SyaratKetentuanScreen = () => {
+
+const { theme } = resolveConfig(tailwindConfig)
+
+interface TermsAndConditionInterface {
+  navigation: any,
+  route: any
+}
+
+const SyaratKetentuanScreen: React.FC<TermsAndConditionInterface> = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
+  const { isRegister } = route.params;
+  const [loading, setLoading] = React.useState(false);
+  const [toggleCheckBox, setToggleCheckBox] = useState(false)
+
+  const pressRegister = async () => {
+    setLoading(true)
+    try {
+      await acceptSNKRequest()
+      navigation.navigate("ListChat")
+
+    } catch (error) {
+      ToastAndroid.show("Gagal menyetujui syarat dan ketentuan !", ToastAndroid.SHORT)
+
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <View style={{ flex: 1, marginBottom: insets.bottom }}>
@@ -94,6 +124,34 @@ const SyaratKetentuanScreen = () => {
           Dengan menggunakan NKRIPS pada tahap beta ini, Anda menyatakan setuju atas S&K ringkas ini.
         </Text>
       </ScrollView>
+
+      {
+        isRegister &&
+        <View className="py-3 border-t border-t-gray-100 px-4">
+          <View className="items-center flex-row">
+            <View className="w-1/12">
+              <CheckBox
+                boxType="square"
+                tintColors={{ true: theme?.colors!.primary as string }}
+                disabled={false}
+                value={toggleCheckBox}
+                onValueChange={(newValue) => setToggleCheckBox(newValue)}
+              />
+            </View>
+            <View className="w-11/12 pl-2">
+              <Text className="font-satoshi text-md text-black">Saya telah membaca dan menyetujui Syarat & Ketentuan diatas</Text>
+            </View>
+          </View>
+          <View className="mt-3">
+            <Components.Button
+              isDisabled={toggleCheckBox ? false : true}
+              label="Daftar"
+              onPress={pressRegister}
+              loading={loading}
+            />
+          </View>
+        </View>
+      }
     </View>
   );
 };

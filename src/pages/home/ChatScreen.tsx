@@ -68,7 +68,8 @@ const ListChat: FC<ListChatInterface> = ({ navigation }) => {
       }
 
     } catch (error) {
-      ToastAndroid.show("Gagal mengambil data list pesan !", ToastAndroid.SHORT)
+
+      // ToastAndroid.show("Gagal mengambil data list pesan !", ToastAndroid.SHORT)
 
     } finally {
       setLoadingListChat(false)
@@ -161,7 +162,7 @@ const ListChat: FC<ListChatInterface> = ({ navigation }) => {
 
       </View>
       <View className="items-end justify-end absolute bottom-[20px] right-[20px]">
-        <TouchableOpacity onPress={() => navigation.navigate("PesanBaru")}>
+        <TouchableOpacity id="new-message-button" onPress={() => navigation.navigate("PesanBaru")} style={{ zIndex: 10 }}>
           <Assets.ImageNewMessage width={70} height={70} />
         </TouchableOpacity>
       </View>

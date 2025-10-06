@@ -1,4 +1,4 @@
-import { Text, ToastAndroid, TouchableOpacity, View } from "react-native"
+import { Text, ToastAndroid, TouchableOpacity, View, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback, Platform } from "react-native"
 import { FC, useEffect, useState } from "react"
 import Assets from "../../../assets"
 import Components from "../../../components"
@@ -36,47 +36,51 @@ const Register: FC<RegisterInterface> = ({ navigation }) => {
     }
 
     return (
-        <View className="flex-1 bg-white">
-            <View className="justify-center items-center flex-1">
-                <Assets.ImageLogo />
-            </View>
-            <View className="flex-1 border border-gray-200 rounded-t-3xl p-5">
-                <View>
-                    <Text className="font-satoshi font-medium text-gray-600 text-xl">Daftar Akun</Text>
-                </View>
-                <View className="my-2 flex-row">
-                    <Text className="font-satoshi text-gray-400 text-md">Sudah punya akun ? </Text>
-                    <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                        <Text className="font-satoshi font-bold text-md text-Primary/Main">Masuk Sekarang</Text>
-                    </TouchableOpacity>
-                </View>
-                <View className="mt-5">
-                    <View className="my-3">
-                        <Components.FormInput
-                            msg={errorMsg}
-                            label="Nomor Telepon"
-                            inputType="number"
-                            placeholder="Masukan nomor telepon"
-                            onChange={setPhoneNumber}
-                            value={phoneNumber}
-                            prefix={
-                                <View>
-                                    <Text className="font-satoshi text-black text-sm">+62 |</Text>
-                                </View>
-                            }
-                        />
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View className="flex-1 bg-white">
+                    <View className="justify-center items-center flex-1">
+                        <Assets.ImageLogo />
                     </View>
-                    <View>
-                        <Components.Button
-                            label="Daftar"
-                            onPress={ProccessRegister}
-                            loading={loadingRegister}
-                            isDisabled={phoneNumber !== "" ? false : true}
-                        />
+                    <View className="flex-1 border border-gray-200 rounded-t-3xl p-5">
+                        <View>
+                            <Text className="font-satoshi font-medium text-gray-600 text-xl">Daftar Akun</Text>
+                        </View>
+                        <View className="my-2 flex-row">
+                            <Text className="font-satoshi text-gray-400 text-md">Sudah punya akun ? </Text>
+                            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                                <Text className="font-satoshi font-bold text-md text-Primary/Main">Masuk Sekarang</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View className="mt-5">
+                            <View className="my-3">
+                                <Components.FormInput
+                                    msg={errorMsg}
+                                    label="Nomor Telepon"
+                                    inputType="number"
+                                    placeholder="Masukan nomor telepon"
+                                    onChange={setPhoneNumber}
+                                    value={phoneNumber}
+                                    prefix={
+                                        <View>
+                                            <Text className="font-satoshi text-black text-sm">+62 |</Text>
+                                        </View>
+                                    }
+                                />
+                            </View>
+                            <View>
+                                <Components.Button
+                                    label="Daftar"
+                                    onPress={ProccessRegister}
+                                    loading={loadingRegister}
+                                    isDisabled={phoneNumber !== "" ? false : true}
+                                />
+                            </View>
+                        </View>
                     </View>
                 </View>
-            </View>
-        </View>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     )
 }
 

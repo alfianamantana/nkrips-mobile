@@ -1,6 +1,6 @@
 import Login from "./auth/login"
 import Register from "./auth/register"
-import CreateUsername from "./auth/register/create-username"
+import CreateUsername from "./auth/register/CreateUsernameScreen"
 import InputDataRegister from "./auth/register/input-data-register"
 import InputOTP from "./otp"
 import ListChat from "./home/ChatScreen"

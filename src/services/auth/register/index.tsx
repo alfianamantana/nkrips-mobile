@@ -56,6 +56,8 @@ export const dataDiriRequest = async (fullname = "", email = "", tanggalLahir = 
 
 export const acceptSNKRequest = async () => {
     const token = await AsyncStorage.getItem("token")
+    console.log(token, 'token');
+
     const caller = API.Driver.instance().init({ base_url: BASE_URL }).driver.post["/onboarding/accept-snk"]()
     return await caller({
         header: {

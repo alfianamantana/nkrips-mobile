@@ -12,6 +12,6 @@ module.exports = {
         allowUndefined: true,
       },
     ],
-    ["nativewind/babel"]
+    ["nativewind/babel"],
   ]
 };

@@ -1,7 +1,6 @@
 import { AttachmentType } from "@pn/watch-is/model"
 import { FC } from "react"
-import { Dimensions, Text, TouchableOpacity, View } from "react-native"
-import AutoHeightImage from "react-native-auto-height-image"
+import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native"
 import VideoPlayer from 'react-native-video-controls';
 import Components from "../components";
 import Assets from "../assets";
@@ -21,9 +20,9 @@ const PreviewMedia: FC<PreviewMediaInterface> = ({ navigation, route }) => {
     <View className="flex-1 bg-black items-center justify-center">
       {
         type === AttachmentType.IMAGE &&
-        <AutoHeightImage
-          width={width}
+        <Image
           source={{ uri: url }}
+          style={{ width: width, height: height, resizeMode: 'contain' }}
         />
       }
 

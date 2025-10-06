@@ -128,8 +128,19 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
                       </View> :
                       (Object.keys(dataProfile?.user).length > 0 && dataProfile.user.profile_picture_url) ?
                         <Image source={{ uri: dataProfile.user.profile_picture_url }} className="w-[80px] h-[80px] rounded-full" />
-                        :
-                        <Assets.ImageEmptyProfile width={80} height={80} />
+                        : <View
+                          style={{
+                            width: 54,
+                            height: 54,
+                            borderRadius: 27,
+                            backgroundColor: "#F3F4F6",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <Image source={Assets.ImageNkrips} style={{ width: 50, height: 50 }} />
+                        </View>
                   }
                 </View>
                 <View className="mt-1 flex-row items-center">

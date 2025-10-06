@@ -212,8 +212,19 @@ const Profile: FC<ProfileInterface> = ({ navigation, route }) => {
                   >
                     <Image resizeMode="cover" source={{ uri: detailDataProfile.user.profile_picture_url }} className="w-[100px] h-[100px] rounded-full" />
                   </TouchableOpacity>
-                  :
-                  <Assets.ImageEmptyProfile width={100} height={100} />
+                  : <View
+                    style={{
+                      width: 54,
+                      height: 54,
+                      borderRadius: 27,
+                      backgroundColor: "#F3F4F6",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Image source={Assets.ImageNkrips} style={{ width: 100, height: 100 }} />
+                  </View>
                 :
                 detailDataGroup && detailDataGroup.logo ?
                   <TouchableOpacity
@@ -227,7 +238,19 @@ const Profile: FC<ProfileInterface> = ({ navigation, route }) => {
                     <Image resizeMode="cover" source={{ uri: detailDataGroup.logo }} className="w-[100px] h-[100px] rounded-full" />
                   </TouchableOpacity>
                   :
-                  <Assets.ImageGroupEmptyProfile width={100} height={100} />
+                  <View
+                    style={{
+                      width: 54,
+                      height: 54,
+                      borderRadius: 27,
+                      backgroundColor: "#F3F4F6",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Image source={Assets.ImageNkrips} style={{ width: 100, height: 100 }} />
+                  </View>
 
             }
           </View>

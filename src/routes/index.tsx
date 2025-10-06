@@ -199,10 +199,25 @@ const RouteApps = () => {
                                             <View>
                                                 {
                                                     Object.keys(dataUser).length > 0 &&
-                                                        dataUser.profile_picture_url !== null ?
-                                                        <Image source={{ uri: dataUser.profile_picture_url }} width={30} height={30} className="rounded-full" />
+                                                        dataUser.profile_picture_url ?
+                                                        (
+                                                            <>
+                                                                <Image source={{ uri: dataUser.profile_picture_url }} width={30} height={30} className="rounded-full" />
+                                                            </>
+                                                        )
                                                         :
-                                                        <Assets.ImageEmptyProfile width={30} height={30} />
+                                                        <View
+                                                            style={{
+                                                                width: 30,
+                                                                height: 30,
+                                                                borderRadius: 9999,
+                                                                backgroundColor: "#E4E4E7",
+                                                                justifyContent: "center",
+                                                                alignItems: "center"
+                                                            }}
+                                                        >
+                                                            <Image source={Assets.ImageNkrips} style={{ width: 30, height: 30 }} />
+                                                        </View>
                                                 }
                                             </View>
                                             <View className="px-3">
