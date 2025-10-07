@@ -20,30 +20,21 @@ const AddFriends: FC<AddFriendsInterface> = ({ navigation }) => {
   const searchFriends = async () => {
     setLoading(true)
     try {
-      console.log(activeFilter, 'activeFilteractiveFilter');
-
-      console.log(keywords, 'keywordskeywords');
       if (activeFilter) {
-
         const idUser = await listContactIdUserSearchRequest(keywords)
         if (idUser) {
-          console.log(idUser, 'idUser');
-
           setDataUser(idUser)
         }
-
       } else {
         const phoneNumber = await listContactPhoneNumberSearchRequest(keywords)
-        console.log(phoneNumber, 'phoneNumberphoneNumber');
-
         if (phoneNumber) {
           setDataUser(phoneNumber)
         }
       }
 
     } catch (error) {
-      console.log(error.response, 'errorerror');
-
+      setDataUser(null)
+      ToastAndroid.show(error.response.data, ToastAndroid.SHORT)
     } finally {
       setLoading(false)
     }

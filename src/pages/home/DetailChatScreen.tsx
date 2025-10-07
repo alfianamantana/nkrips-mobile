@@ -25,6 +25,8 @@ import Video from "react-native-video"
 import Modal from "react-native-modal"
 import { postPinMessageRequest, deleteMessageRequest, editMessageRequest } from "../../services/home/chat/index"
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import RNFS from 'react-native-fs';
+import { ScrollView } from "react-native-gesture-handler"
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -743,7 +745,7 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
               </View>
             )}
 
-            <View className="flex-1 pt-2 px-4">
+            <View id="message-list" className="flex-1 pt-2 px-4">
               <View className="w-full flex-1">
                 {
                   loading ?
@@ -759,6 +761,7 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
                       <>
                         {listMessage.length > 0 &&
                           <FlatList
+                            id="list-message"
                             ref={flatListRef}
                             removeClippedSubviews
                             initialNumToRender={5}
@@ -1021,7 +1024,7 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
                         <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Gallery</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity onPress={() => choseVideoExplorer()} className="flex-1 justify-center items-center">
+                      <TouchableOpacity id="video" onPress={() => choseVideoExplorer()} className="flex-1 justify-center items-center">
                         <Assets.IconVideoBlack width={35} height={35} />
                         <Text className="font-satoshi text-md font-medium text-gray-600 mt-1">Video</Text>
                       </TouchableOpacity>

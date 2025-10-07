@@ -9,7 +9,7 @@ type PostProfileNavigationProp = NativeStackNavigationProp<RootStackParamList, '
 import { PostingType } from "@pn/watch-is/model"
 import { formatCurrency } from "react-native-format-currency";
 import Badge from "./badge"
-import VideoPlayer from 'react-native-video-controls';
+import Video from 'react-native-video';
 import moment from "moment-timezone"
 import { getVoteRequest, voteRequest } from "../services/home/posting"
 import { storeShowModalsComment } from "../store"
@@ -227,17 +227,33 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
                       postImage.caption !== "" &&
                       <View className="mb-2">
                         <Text className="font-satoshi text-black">{postImage.caption}</Text>
+                        <Text className="font-satoshi text-black">az</Text>
                       </View>
                     }
 
-                    <View id="image-post">
+                    <TouchableOpacity
+                      id="image-post"
+                      onPress={() => {
+                        console.log("Press image post");
+                        return (
+                          navigation.navigate("PreviewMedia", {
+                            type: 'IMAGE',
+                            name: postImage.filename,
+                            url: postImage.image_url
+                          })
+                        )
+                      }
+                      }
+                      className="mb-2 relative items-center justify-center"
+                    >
+
                       <Image
                         key={p}
                         source={{ uri: postImage?.image_url }}
                         style={{ width: Dimensions.get('window').width - 30, height: 200, resizeMode: 'contain' }}
                         className="my-1 bg-gray-100 rounded-lg"
                       />
-                    </View>
+                    </TouchableOpacity>
                   </View>
                 )
               }
@@ -261,13 +277,32 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
                       </View>
                     }
 
-                    <VideoPlayer
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("PreviewMedia", {
+                        type: 'VIDEO',
+                        name: postVideo.filename,
+                        url: postVideo.video_url
+                      })}
+                      className="mb-2 relative items-center justify-center"
+                    >
+                      <Video
+                        source={{ uri: postVideo.video_url }}
+                        resizeMode="cover"
+                        className="w-[200px] h-[200px] opacity-20 rounded-md"
+                        paused={true}
+                      />
+
+                      <View className="bg-black/20 absolute w-full h-full items-center justify-center">
+                        <Assets.IconVideoBlack width={30} height={30} />
+                      </View>
+                    </TouchableOpacity>
+                    {/* <VideoPlayer
                       autoPlay={false}
                       showOnStart={false}
                       paused={true}
                       source={{ uri: postVideo.video_url }}
                       className="my-1 bg-gray-100 rounded-lg h-[305px]"
-                    />
+                    /> */}
                   </View>
                 )
 
@@ -423,7 +458,7 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
           </View>
         </View>
 
-        <TouchableOpacity onPress={() => setShowModalsComment(dataPost?.posting?.hash, true)} className="flex-1 flex-row items-center justify-end">
+        <TouchableOpacity id="comment-button" disabled={showModalsComment.status} onPress={() => setShowModalsComment(dataPost?.posting?.hash, true)} className="flex-1 flex-row items-center justify-end">
           <View>
             <Text className="font-satoshi text-gray-600 text-xs">{dataPost?.list_comment?.length} Komentar</Text>
           </View>

@@ -48,7 +48,6 @@ export const listContactSearchRequest = async (search = "") => {
 }
 
 export const listContactPhoneNumberSearchRequest = async (search = "") => {
-    console.log(search, 'searchsearch');
 
     const token = await AsyncStorage.getItem("token")
     const caller = API.Driver.instance().init({ base_url: BASE_URL }).driver.get["/search/by-phone-number"]()
@@ -57,7 +56,7 @@ export const listContactPhoneNumberSearchRequest = async (search = "") => {
             authorization: `Bearer ${token}`
         },
         query: {
-            phone_number: search
+            phone_number: `+62${search}`
         }
     })
 }

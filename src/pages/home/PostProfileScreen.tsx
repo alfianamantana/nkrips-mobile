@@ -1,14 +1,14 @@
 import { FC, Fragment, useCallback, useEffect, useState } from "react"
-import { FlatList, Image, RefreshControl, Text, ToastAndroid, View, ScrollView, TouchableOpacity } from "react-native"
+import { FlatList, Image, RefreshControl, Text, ToastAndroid, View, ScrollView, TouchableOpacity, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform } from "react-native"
 import { addFriendRequest, profileContactRequest } from "../../services/home/profile"
 import Assets from "../../assets"
 import Components from "../../components"
 import { Schema } from "@pn/watch-is/driver"
 import { User, PostingType } from "@pn/watch-is/model"
 import { listPostingByUserRequest } from "../../services/home/posting"
-import { listContactPhoneNumberSearchRequest, listContactRequest } from "../../services/home/contact"
 import { useFocusEffect } from "@react-navigation/native"
 import ContextMenu from "react-native-context-menu-view"
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface PostProfileInterface {
   navigation: any,
@@ -49,10 +49,6 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
 
       setDataProfile(detailProfile)
 
-      if (isMyProfile === undefined) {
-        searchFriend(detailProfile.phone_number!)
-      }
-
     } catch (error) {
       ToastAndroid.show("Gagal mengambil profile data !", ToastAndroid.SHORT)
 
@@ -77,18 +73,6 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
     }
   }
 
-  const searchFriend = async (number: string) => {
-    try {
-      const search: any = await listContactPhoneNumberSearchRequest(number)
-      if (search.already_friend) {
-        setIsFriend(true)
-      }
-
-    } catch (error) {
-      ToastAndroid.show("Gagal medapatkan pengguna !", ToastAndroid.SHORT)
-    }
-  }
-
   useFocusEffect(
     useCallback(() => {
       profileData()
@@ -109,204 +93,218 @@ const PostProfile: FC<PostProfileInterface> = ({ navigation, route }) => {
     }
   }, [activeTab])
 
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 0 : 0;
+
   return (
-    <View className="bg-gray-100 flex-1">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f3f4f6" }} edges={['left', 'right', 'bottom']}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={keyboardVerticalOffset}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <View className="flex-1">
 
-      {
-        !onScrolling &&
-        <Fragment>
-          <View>
-            <Image source={require("../../assets/images/image-background-profile.png")} className="w-full h-[130px]" />
-          </View>
-          <View className="px-4 bg-white mb-2">
-            <View className="flex-row">
-              <View className="flex-1 top-[-35px]">
-                <View className="w-[90px] h-[90px] bg-white rounded-full justify-center items-center">
-                  {
-                    loadingProfile ?
-                      <View className="w-[80px] h-[80px] rounded-full bg-gray-100 animate-pulse">
-                      </View> :
-                      (Object.keys(dataProfile?.user).length > 0 && dataProfile.user.profile_picture_url) ?
-                        <Image source={{ uri: dataProfile.user.profile_picture_url }} className="w-[80px] h-[80px] rounded-full" />
-                        : <View
-                          style={{
-                            width: 54,
-                            height: 54,
-                            borderRadius: 27,
-                            backgroundColor: "#F3F4F6",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            overflow: "hidden",
-                          }}
-                        >
-                          <Image source={Assets.ImageNkrips} style={{ width: 50, height: 50 }} />
-                        </View>
-                  }
-                </View>
-                <View className="mt-1 flex-row items-center">
-                  <View className="flex-1">
-                    <View>
-                      {
-                        loadingProfile ?
-                          <View className="h-[20px] rounded-md bg-gray-100 w-4/12 animate-pulse">
-                          </View>
-                          :
-                          Object.keys(dataProfile.user).length > 0 &&
-                          <Text className="font-satoshi text-black text-lg font-bold">{dataProfile.user.name}</Text>
-
-                      }
-                    </View>
-                    <View className="mt-1">
-                      <Text className="font-satoshi text-gray-700">Avaliable</Text>
-                    </View>
-
-                    {
-                      !dataProfile.is_blocked && isMyProfile === undefined &&
-                      <View className="flex-row items-center mt-5">
-                        <View className="w-5/12 pr-1">
-                          <Components.Button
-                            customHeight={37}
-                            label={`${!isFriend ? "Tambah" : ""} Teman`}
-                            customIcon={isFriend ? "" : <Assets.IconPlusWhite width={20} height={20} />}
-                            onPress={() => {
-                              !isFriend &&
-                                Object.keys(dataProfile?.user).length > 0 &&
-                                addFriends(dataProfile.user.public_hash)
-                            }}
-                            loading={loadingAddFriend}
-                          />
-                        </View>
-                        <View className="w-5/12 px-1">
+              {
+                !onScrolling &&
+                <Fragment>
+                  <View>
+                    <Image source={require("../../assets/images/image-background-profile.png")} className="w-full h-[130px]" />
+                  </View>
+                  <View className="px-4 bg-white mb-2">
+                    <View className="flex-row">
+                      <View className="flex-1 top-[-35px]">
+                        <View className="w-[90px] h-[90px] bg-white rounded-full justify-center items-center">
                           {
                             loadingProfile ?
-                              <View className="h-[37px] rounded-md bg-gray-100 w-full animate-pulse">
+                              <View className="w-[80px] h-[80px] rounded-full bg-gray-100 animate-pulse">
                               </View> :
-                              (
-                                <Components.Button
-                                  label="Pesan"
-                                  customHeight={37}
-                                  customIcon={<Assets.IconMessageRed width={20} height={20} />}
-                                  customColor="bg-Primary/Main/10"
-                                  customColorText="text-Primary/Main"
-                                  onPress={
-                                    Object.keys(dataProfile?.user).length > 0 ?
-                                      () => {
-                                        navigation.navigate("DetailChat", {
-                                          public_hash: dataProfile.user.public_hash
-                                        })
-                                      }
-                                      :
-                                      () => { }
-                                  }
-                                />
-                              )
+                              (Object.keys(dataProfile?.user).length > 0 && dataProfile.user.profile_picture_url) ?
+                                <Image source={{ uri: dataProfile.user.profile_picture_url }} className="w-[80px] h-[80px] rounded-full" />
+                                : <View
+                                  style={{
+                                    width: 54,
+                                    height: 54,
+                                    borderRadius: 27,
+                                    backgroundColor: "#F3F4F6",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    overflow: "hidden",
+                                  }}
+                                >
+                                  <Image source={Assets.ImageNkrips} style={{ width: 50, height: 50 }} />
+                                </View>
                           }
                         </View>
-                        <View className="w-2/12 pl-1">
-                          <ContextMenu
-                            actions={[
+                        <View className="mt-1 flex-row items-center">
+                          <View className="flex-1">
+                            <View>
                               {
-                                title: "Blokir"
-                              },
-                              {
-                                title: "Laporkan"
+                                loadingProfile ?
+                                  <View className="h-[20px] rounded-md bg-gray-100 w-4/12 animate-pulse">
+                                  </View>
+                                  :
+                                  Object.keys(dataProfile.user).length > 0 &&
+                                  <Text className="font-satoshi text-black text-lg font-bold">{dataProfile.user.name}</Text>
+
                               }
-                            ]}
-                            onPress={(e) => {
-                              console.log("e => ", e.nativeEvent);
-                            }}
-                            dropdownMenuMode={true}
-                          >
-                            <Components.Button
-                              label=""
-                              customHeight={37}
-                              customIcon={<Assets.IconMore width={20} height={20} />}
-                              customColor="bg-gray-100"
-                              customColorText="text-Primary/Main"
-                              onPress={() => { }}
-                            />
-                          </ContextMenu>
+                            </View>
+                            <View className="mt-1">
+                              <Text className="font-satoshi text-gray-700">Avaliable</Text>
+                            </View>
+
+                            {
+                              !dataProfile.is_blocked && isMyProfile === undefined &&
+                              <View className="flex-row items-center mt-5">
+                                <View className="w-5/12 pr-1">
+                                  <Components.Button
+                                    customHeight={37}
+                                    label={`${!isFriend ? "Tambah" : ""} Teman`}
+                                    customIcon={isFriend ? "" : <Assets.IconPlusWhite width={20} height={20} />}
+                                    onPress={() => {
+                                      !isFriend &&
+                                        Object.keys(dataProfile?.user).length > 0 &&
+                                        addFriends(dataProfile.user.public_hash)
+                                    }}
+                                    loading={loadingAddFriend}
+                                  />
+                                </View>
+                                <View className="w-5/12 px-1">
+                                  {
+                                    loadingProfile ?
+                                      <View className="h-[37px] rounded-md bg-gray-100 w-full animate-pulse">
+                                      </View> :
+                                      (
+                                        <Components.Button
+                                          label="Pesan"
+                                          customHeight={37}
+                                          customIcon={<Assets.IconMessageRed width={20} height={20} />}
+                                          customColor="bg-Primary/Main/10"
+                                          customColorText="text-Primary/Main"
+                                          onPress={
+                                            Object.keys(dataProfile?.user).length > 0 ?
+                                              () => {
+                                                navigation.navigate("DetailChat", {
+                                                  public_hash: dataProfile.user.public_hash
+                                                })
+                                              }
+                                              :
+                                              () => { }
+                                          }
+                                        />
+                                      )
+                                  }
+                                </View>
+                                <View className="w-2/12 pl-1">
+                                  <ContextMenu
+                                    actions={[
+                                      {
+                                        title: "Blokir"
+                                      },
+                                      {
+                                        title: "Laporkan"
+                                      }
+                                    ]}
+                                    onPress={(e) => {
+                                      console.log("e => ", e.nativeEvent);
+                                    }}
+                                    dropdownMenuMode={true}
+                                  >
+                                    <Components.Button
+                                      label=""
+                                      customHeight={37}
+                                      customIcon={<Assets.IconMore width={20} height={20} />}
+                                      customColor="bg-gray-100"
+                                      customColorText="text-Primary/Main"
+                                      onPress={() => { }}
+                                    />
+                                  </ContextMenu>
+                                </View>
+                              </View>
+                            }
+                          </View>
+
+
+                          {
+                            (isMyProfile !== undefined && isMyProfile === true) &&
+                            <TouchableOpacity onPress={() => navigation.navigate("EditProfile", {
+                              username: username
+                            })}>
+                              <Assets.IconEdit />
+                            </TouchableOpacity>
+                          }
                         </View>
                       </View>
-                    }
+                    </View>
                   </View>
-
-
-                  {
-                    (isMyProfile !== undefined && isMyProfile === true) &&
-                    <TouchableOpacity onPress={() => navigation.navigate("EditProfile", {
-                      username: username
-                    })}>
-                      <Assets.IconEdit />
-                    </TouchableOpacity>
-                  }
-                </View>
-              </View>
-            </View>
-          </View>
-        </Fragment>
-      }
-
-      <View className="mb-2 flex-1">
-        {
-          loadingListPost ?
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {
-                [...Array(10)].map((e, i) => (
-                  <View key={i} className="my-1 bg-gray-200 rounded-md animate-pulse h-[300px]">
-                  </View>
-                ))
+                </Fragment>
               }
-            </ScrollView>
-            :
-            postData.length > 0 ?
-              <FlatList
-                onStartReached={() => { setOnScrolling(false) }}
-                onScrollEndDrag={() => { setOnScrolling(true) }}
-                removeClippedSubviews
-                initialNumToRender={5}
-                data={postData}
-                showsVerticalScrollIndicator={false}
-                keyExtractor={(item, index) => index.toString()}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={listDataPost} />}
-                renderItem={({ item, index }) => {
-                  return (
-                    <Components.ListPost
-                      key={index}
-                      dataPost={item}
-                      listPost={listDataPost}
-                    />
-                  )
-                }}
-                // onEndReached={handlePagination}
-                onEndReachedThreshold={0.5}
-                ListFooterComponent={() => (
-                  <Fragment>
-                    {/* {
+
+              <View className="mb-2 flex-1">
+                {
+                  loadingListPost ?
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                      {
+                        [...Array(10)].map((e, i) => (
+                          <View key={i} className="my-1 bg-gray-200 rounded-md animate-pulse h-[300px]">
+                          </View>
+                        ))
+                      }
+                    </ScrollView>
+                    :
+                    postData.length > 0 ?
+                      <FlatList
+                        onStartReached={() => { setOnScrolling(false) }}
+                        onScrollEndDrag={() => { setOnScrolling(true) }}
+                        removeClippedSubviews
+                        initialNumToRender={5}
+                        data={postData}
+                        showsVerticalScrollIndicator={false}
+                        keyExtractor={(item, index) => index.toString()}
+                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={listDataPost} />}
+                        renderItem={({ item, index }) => {
+                          return (
+                            <Components.ListPost
+                              key={index}
+                              dataPost={item}
+                              listPost={listDataPost}
+                            />
+                          )
+                        }}
+                        // onEndReached={handlePagination}
+                        onEndReachedThreshold={0.5}
+                        ListFooterComponent={() => (
+                          <Fragment>
+                            {/* {
                                         pagesManager.page < pagesManager.totalPages &&
                                         <Components.LoadMore/>
                                     } */}
-                  </Fragment>
-                )}
-              />
-              :
-              <View className="justify-center items-center flex-1">
-                {dataProfile.is_blocked ? (
-                  <View className="bg-red-300 px-4 py-2 m-4 rounded-full justify-center items-center">
-                    <Text className="text-sm text-center text-black">
-                      {dataProfile.is_blocker
-                        ? "Anda telah memblokir pengguna ini."
-                        : "Anda diblokir oleh pengguna ini."
-                      }
-                    </Text>
-                  </View>
-                ) : (
-                  <Text className="font-satoshi font-medium text-Primary/Main">Belum ada postingan !</Text>
-                )}
+                          </Fragment>
+                        )}
+                      />
+                      :
+                      <View className="justify-center items-center flex-1">
+                        {dataProfile.is_blocked ? (
+                          <View className="bg-red-300 px-4 py-2 m-4 rounded-full justify-center items-center">
+                            <Text className="text-sm text-center text-black">
+                              {dataProfile.is_blocker
+                                ? "Anda telah memblokir pengguna ini."
+                                : "Anda diblokir oleh pengguna ini."
+                              }
+                            </Text>
+                          </View>
+                        ) : (
+                          <Text className="font-satoshi font-medium text-Primary/Main">Belum ada postingan !</Text>
+                        )}
+                      </View>
+                }
               </View>
-        }
-      </View>
-    </View>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }
 

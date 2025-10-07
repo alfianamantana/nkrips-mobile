@@ -42,6 +42,6 @@ export const uploadFile2 = async (path: string, data: any) => {
             "Authorization": `Bearer ${Token}`,
             "Content-Type": "multipart/form-data"
         },
-        timeout: 60000
+        timeout: 120000
     })
 }

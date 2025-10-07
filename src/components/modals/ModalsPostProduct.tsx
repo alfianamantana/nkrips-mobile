@@ -260,14 +260,14 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
                 value={kuantitas}
               />
             </View>
+            <View className="mt-5">
+              <Button
+                loading={loading}
+                label="Posting"
+                onPress={postProduct}
+              />
+            </View>
           </ScrollView>
-        </View>
-        <View className="mt-5">
-          <Button
-            loading={loading}
-            label="Posting"
-            onPress={postProduct}
-          />
         </View>
       </View>
 

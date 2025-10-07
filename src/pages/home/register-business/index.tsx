@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, ScrollView, TouchableOpacity, Image, ToastAndroid } from "react-native";
+import { View, ScrollView, TouchableOpacity, Image, ToastAndroid, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from "../../../components/button"
 import { postDaftarUsaha } from "../../../services/home/registerJadab/index"
 import { HeaderDaftarBisnis } from "../../../components/registerBusiness/headerDaftarBisnis";
@@ -9,6 +10,7 @@ import axios, { AxiosResponse } from "axios";
 
 const RegisterBussinessScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(false);
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 0 : 0;
   const [data, setData] = useState({
     nama_usaha: '',
     alamat: '',
@@ -98,21 +100,29 @@ const RegisterBussinessScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View className="flex-1 bg-white ">
-      <ScrollView>
-        <View className="flex flex-col gap-y-2 px-2 pb-10">
-          <HeaderDaftarBisnis step={step} />
-          {step === 1 ? (
-            <DaftarUsahaForm data={data} setData={setData} />
-          ) : (
-            <AjukanModalForm data={data} setData={setData} />
-          )}
-          <View className="mt-">
-            <Button label="Lanjutkan" onPress={submit} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={['top', 'left', 'right', 'bottom']}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={keyboardVerticalOffset}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <ScrollView>
+              <View className="flex flex-col gap-y-2 px-2 pb-10">
+                <HeaderDaftarBisnis step={step} />
+                {step === 1 ? (
+                  <DaftarUsahaForm data={data} setData={setData} />
+                ) : (
+                  <AjukanModalForm data={data} setData={setData} />
+                )}
+                <Button label="Lanjutkan" onPress={submit} />
+              </View>
+            </ScrollView>
           </View>
-        </View>
-      </ScrollView>
-    </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

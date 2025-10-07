@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ToastAndroid, Dimensions, Image } from "react-native";
 import Assets from "../../assets";
-import { PostingType, VoteType } from "@pn/watch-is/model";
+import { PostingType, User, VoteType } from "@pn/watch-is/model";
 import { getVoteRequest, voteRequest } from "../../services/home/posting";
 import VideoPlayer from 'react-native-video-controls';
 import Components from "../../components";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import moment from "moment-timezone";
 interface DetailPostScreenProps {
   route: any;
   navigation: any;
@@ -17,11 +18,11 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
   const [showModalsComment, setShowModalsComment] = useState({ public_hash: "", status: false });
   const [post, setPost] = useState<any>({});
   const [imageIndexes, setImageIndexes] = useState<{ [key: number]: number }>({});
-
+  const [isUserPost, setIsUserPost] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const voteData = async () => {
     try {
       const dataVote = await getVoteRequest(public_hash);
-      console.log(dataVote, 'dataVotedataVote');
 
       setVote(dataVote);
     } catch (error) {
@@ -45,7 +46,23 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
+      console.log(data, 'datadatadata');
+
+      const user: string | null = await AsyncStorage.getItem("user")
+      if (user === null) {
+      } else {
+        const parseUser: User = JSON.parse(user)
+        console.log(data.posting?.otm_id_user.id, 'post.posting?.otm_id_user.id')
+        console.log(parseUser.id, 'parseUser.id');
+        if (data.posting?.otm_id_user.id === parseUser.id) {
+          setIsUserPost(true)
+        } else {
+          setIsUserPost(false)
+        }
+      }
+
       setPost(data);
+
     } catch (error) {
       ToastAndroid.show("Gagal memuat data !", ToastAndroid.SHORT);
     }
@@ -56,8 +73,9 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
     voteData();
   }, []);
 
+
   // Render posting sesuai tipe
-  const renderContent = () => {
+  const renderContent = ({ isUserPost }: { isUserPost: boolean }) => {
     if (!post.posting) return null;
 
     // IMAGE_STATIC
@@ -71,7 +89,7 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
           )}
           <Image
             source={{ uri: postImage.image_url }}
-            style={{ width: Dimensions.get('window').width - 30, resizeMode: 'contain', borderRadius: 12, backgroundColor: "#f4f4f4" }}
+            style={{ width: Dimensions.get('window').width - 30, height: 305, resizeMode: 'contain', borderRadius: 12, backgroundColor: "#f4f4f4" }}
           />
         </View>
       ));
@@ -109,8 +127,6 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
     // SELL_PRODUCT
     if (post.posting.type === PostingType.SELL_PRODUCT && post.list_sell_product?.length > 0) {
       return post.list_sell_product.map((postSell: any, p: number) => {
-        console.log(post, 'list_sell_productlist_sell_product');
-
         const images = postSell?.list_images || [];
         const totalImages = images.length;
         const imageIndex = imageIndexes[p] || 0;
@@ -133,10 +149,25 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
           <View key={p}>
             {totalImages > 0 && (
               <View>
-                <Image
-                  source={{ uri: images[imageIndex].image_url }}
-                  style={{ width: Dimensions.get('window').width - 30, resizeMode: 'contain', borderRadius: 12, backgroundColor: "#f4f4f4" }}
-                />
+                <TouchableOpacity
+                  id="image-post"
+                  onPress={() => {
+                    return (
+                      navigation.navigate("PreviewMedia", {
+                        type: 'IMAGE',
+                        name: images[imageIndex].filename,
+                        url: images[imageIndex].image_url
+                      })
+                    )
+                  }}
+                  className="mb-2 relative items-center justify-center"
+                >
+                  <Image
+                    source={{ uri: images[imageIndex].image_url }}
+                    style={{ width: Dimensions.get('window').width - 30, height: 305, resizeMode: 'contain', borderRadius: 12, backgroundColor: "#f4f4f4" }}
+                  />
+
+                </TouchableOpacity>
                 {totalImages > 1 && (
                   <View className="flex-row justify-center items-center mt-2 gap-4">
                     <TouchableOpacity onPress={handlePrev} className="bg-gray-100 rounded-full p-2">
@@ -150,21 +181,26 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
                 )}
               </View>
             )}
+
             <View className="my-2">
               <View className="flex-row justify-between items-center">
                 <Text className="text-lg font-bold text-neutral-800">{postSell?.posting_product.name}</Text>
-                <TouchableOpacity onPress={() => navigation.navigate("DetailChat", {
-                  isComunity: false,
-                  public_hash: post.posting?.otm_id_user.public_hash,
-                  text: `Halo saya tertarik dengan barang ini, apakah masih ada? [Lihat detail barang](nkrips://post/${public_hash})`
-                })}
-                  className="flex-row items-center mt-1 bg-blue-500 rounded-xl px-3 py-2 gap-x-2">
-                  <View>
-                    <Assets.IconChat
-                      className="text-white" width={20} height={20} />
-                  </View>
-                  <Text className="text-sm text-white">Chat Penjual</Text>
-                </TouchableOpacity>
+                {
+                  !isUserPost && (
+                    <TouchableOpacity onPress={() => navigation.navigate("DetailChat", {
+                      isComunity: false,
+                      public_hash: post.posting?.otm_id_user.public_hash,
+                      text: `Halo saya tertarik dengan barang ini, apakah masih ada? [Lihat detail barang](nkrips://post/${public_hash})`
+                    })}
+                      className="flex-row items-center mt-1 bg-blue-500 rounded-xl px-3 py-2 gap-x-2">
+                      <View>
+                        <Assets.IconChat
+                          className="text-white" width={20} height={20} />
+                      </View>
+                      <Text className="text-sm text-white">Chat Penjual</Text>
+                    </TouchableOpacity>
+                  )
+                }
               </View>
               <Text className="text-base font-bold text-blue-600">Rp {postSell?.posting_product.price?.toLocaleString()}</Text>
               <Text className="text-sm text-neutral-600">{postSell?.posting_product.location}</Text>
@@ -182,7 +218,51 @@ const DetailPostScreen: React.FC<DetailPostScreenProps> = ({ route, navigation }
 
   return (
     <ScrollView className="flex-1 bg-white px-4 py-2">
-      {renderContent()}
+      <TouchableOpacity
+        className="flex-row items-center w-10/12"
+        onPress={() =>
+          navigation.navigate("PostProfile", {
+            username: post?.posting.otm_id_user.username!,
+            isMyProfile: post?.posting?.otm_id_user.id === user?.id ? true : false
+          })
+        }>
+        <View className="pr-3">
+          {
+            post?.posting?.otm_id_user?.profile_picture_url ?
+              <Image
+                resizeMode="contain"
+                source={{ uri: post?.posting?.otm_id_user?.profile_picture_url }}
+                className="w-[50px] h-[50px] rounded-full"
+              />
+              :
+              <View
+                style={{
+                  width: 54,
+                  height: 54,
+                  borderRadius: 27,
+                  backgroundColor: "#F3F4F6",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                }}
+              >
+                <Image source={Assets.ImageNkrips} style={{ width: 50, height: 50 }} />
+              </View>
+          }
+        </View>
+        <View className="flex-1">
+          <View>
+            <Text className="font-satoshi text-black font-medium">{post?.posting?.otm_id_user?.name}</Text>
+            <View>
+              {/* <Assets.Image */}
+            </View>
+          </View>
+          <View className="mt-1">
+            <Text className="font-satoshi text-xs text-gray-400">{moment(post?.posting?.created_at).fromNow()}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+      {renderContent({ isUserPost })}
       <View className="flex-row mt-4">
         <View className="flex-1 flex-row items-center">
           <View className="pr-2">

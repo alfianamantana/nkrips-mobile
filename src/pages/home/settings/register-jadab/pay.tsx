@@ -9,8 +9,13 @@ import {
   ActivityIndicator,
   Alert,
   ToastAndroid,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Platform,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import InputImageDnD from "../../../../components/registerBusiness/inputImageDnD";
 import moment from "moment";
 import axios, { AxiosResponse } from "axios";
@@ -23,10 +28,12 @@ const BayarBagiHasilScreen = () => {
   const { id } = route.params || {};
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 0 : 0;
   const [data, setData] = useState({
     jatuh_tempo_id: Number(id),
     bukti_pembayaran_url: "",
     jumlah_pembayaran: "",
+    bulan: "",
   });
 
   const pembayaran = {
@@ -58,7 +65,7 @@ const BayarBagiHasilScreen = () => {
   const onSubmit = async () => {
     try {
       setLoading(true);
-      await postBayarBagiHasil(data);
+      await postBayarBagiHasil({ ...data, jumlah_pembayaran: Number(data.jumlah_pembayaran) });
 
       ToastAndroid.show("Pembayaran berhasil dikirim", ToastAndroid.SHORT);
       navigation.goBack();
@@ -108,113 +115,124 @@ const BayarBagiHasilScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
-        {/* Informasi Pembayaran */}
-        <View className="font-satoshi flex flex-col gap-y-2" style={{ marginBottom: 24 }}>
-          <Text style={{ fontWeight: "bold", fontSize: 20, color: "#222", marginBottom: 12 }}>Informasi Pembayaran</Text>
-          <Text style={{ fontWeight: "bold", fontSize: 15, color: "#222" }}>Nomor Rekening</Text>
-          <View style={{ borderWidth: 1, borderRadius: 8, padding: 8, marginBottom: 8 }}>
-            <Text style={{ fontSize: 16, color: "#222" }}>{pembayaran.nomor_rekening}</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={['left', 'right', 'bottom']}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={keyboardVerticalOffset}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <ScrollView contentContainerStyle={{ padding: 16, flexGrow: 1 }}>
+              {/* Informasi Pembayaran */}
+              <View className="font-satoshi flex flex-col gap-y-2" style={{ marginBottom: 24 }}>
+                <Text style={{ fontWeight: "bold", fontSize: 20, color: "#222", marginBottom: 12 }}>Informasi Pembayaran</Text>
+                <Text style={{ fontWeight: "bold", fontSize: 15, color: "#222" }}>Nomor Rekening</Text>
+                <View style={{ borderWidth: 1, borderRadius: 8, padding: 8, marginBottom: 8 }}>
+                  <Text style={{ fontSize: 16, color: "#222" }}>{pembayaran.nomor_rekening}</Text>
+                </View>
+                <Text style={{ fontWeight: "bold", fontSize: 15, color: "#222" }}>Pemilik Rekening</Text>
+                <View style={{ borderWidth: 1, borderRadius: 8, padding: 8, marginBottom: 8 }}>
+                  <Text style={{ fontSize: 16, color: "#222" }}>{pembayaran.pemilik_rekening}</Text>
+                </View>
+                <Text style={{ fontWeight: "bold", fontSize: 15, color: "#222" }}>Tanggal Pembayaran</Text>
+                <View style={{ borderWidth: 1, borderRadius: 8, padding: 8 }}>
+                  <Text style={{ fontSize: 16, color: "#222" }}>{data.bulan}</Text>
+                </View>
+              </View>
+              {/* Bukti Pembayaran */}
+              <View>
+                <Text style={{ fontWeight: "bold", fontSize: 20, color: "#222", marginBottom: 12 }}>Bukti Pembayaran</Text>
+                <Text style={{ fontWeight: "bold", fontSize: 15, color: "#222", marginBottom: 4 }}>Jumlah Pembayaran <Text style={{ color: "#ef4444" }}>*</Text></Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    paddingHorizontal: 8,
+                    marginBottom: 12,
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <Text style={{ fontSize: 16, color: "#222", marginRight: 4 }}>Rp</Text>
+                  <TextInput
+                    id="jumlah_pembayaran"
+                    placeholder="Jumlah pembayaran"
+                    placeholderTextColor="#888"
+                    keyboardType="numeric"
+                    value={data.jumlah_pembayaran}
+                    onChangeText={(val) => setData({ ...data, jumlah_pembayaran: val })}
+                    style={{
+                      flex: 1,
+                      padding: 8,
+                      fontSize: 16,
+                      color: "#222",
+                      borderWidth: 0,
+                    }}
+                  />
+                </View>
+                {/* Upload Bukti Pembayaran */}
+                <View style={{ marginTop: 16 }}>
+                  <Text style={{ marginBottom: 4, fontSize: 15, color: "#222" }}>
+                    Upload Bukti Pembayaran <Text style={{ color: "#ef4444" }}>*</Text>
+                  </Text>
+                  <TouchableOpacity
+                    style={{
+                      borderWidth: 1,
+                      borderStyle: "dashed",
+                      borderColor: "#ccc",
+                      borderRadius: 8,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      paddingVertical: 32,
+                      marginTop: 8,
+                      marginBottom: 8,
+                      backgroundColor: "#fafafa",
+                    }}
+                    onPress={pickImage}
+                    disabled={uploading}
+                  >
+                    {uploading ? (
+                      <ActivityIndicator size="small" color="#ef4444" />
+                    ) : data.bukti_pembayaran_url ? (
+                      <Image
+                        source={{ uri: data.bukti_pembayaran_url }}
+                        style={{ width: 120, height: 120, borderRadius: 8, marginBottom: 8 }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <InputImageDnD
+                        onUploadFile={uploadFile}
+                      />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <TouchableOpacity
+                onPress={onSubmit}
+                disabled={loading}
+                style={{
+                  backgroundColor: "#ef4444",
+                  padding: 16,
+                  borderRadius: 8,
+                  alignItems: "center",
+                  opacity: loading ? 0.7 : 1,
+                }}
+                className="mt-2"
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Lanjutkan</Text>
+                )}
+              </TouchableOpacity>
+
+            </ScrollView>
           </View>
-          <Text style={{ fontWeight: "bold", fontSize: 15, color: "#222" }}>Pemilik Rekening</Text>
-          <View style={{ borderWidth: 1, borderRadius: 8, padding: 8, marginBottom: 8 }}>
-            <Text style={{ fontSize: 16, color: "#222" }}>{pembayaran.pemilik_rekening}</Text>
-          </View>
-          <Text style={{ fontWeight: "bold", fontSize: 15, color: "#222" }}>Tanggal Pembayaran</Text>
-          <View style={{ borderWidth: 1, borderRadius: 8, padding: 8 }}>
-            <Text style={{ fontSize: 16, color: "#222" }}>{data.bulan}</Text>
-          </View>
-        </View>
-        {/* Bukti Pembayaran */}
-        <View>
-          <Text style={{ fontWeight: "bold", fontSize: 20, color: "#222", marginBottom: 12 }}>Bukti Pembayaran</Text>
-          <Text style={{ fontWeight: "bold", fontSize: 15, color: "#222", marginBottom: 4 }}>Jumlah Pembayaran <Text style={{ color: "#ef4444" }}>*</Text></Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              borderWidth: 1,
-              borderRadius: 8,
-              paddingHorizontal: 8,
-              marginBottom: 12,
-              backgroundColor: "#fff",
-            }}
-          >
-            <Text style={{ fontSize: 16, color: "#222", marginRight: 4 }}>Rp</Text>
-            <TextInput
-              id="jumlah_pembayaran"
-              placeholder="Jumlah pembayaran"
-              placeholderTextColor="#888"
-              keyboardType="numeric"
-              value={data.jumlah_pembayaran}
-              onChangeText={(val) => setData({ ...data, jumlah_pembayaran: val })}
-              style={{
-                flex: 1,
-                padding: 8,
-                fontSize: 16,
-                color: "#222",
-                borderWidth: 0,
-              }}
-            />
-          </View>
-          {/* Upload Bukti Pembayaran */}
-          <View style={{ marginTop: 16 }}>
-            <Text style={{ marginBottom: 4, fontSize: 15, color: "#222" }}>
-              Upload Bukti Pembayaran <Text style={{ color: "#ef4444" }}>*</Text>
-            </Text>
-            <TouchableOpacity
-              style={{
-                borderWidth: 1,
-                borderStyle: "dashed",
-                borderColor: "#ccc",
-                borderRadius: 8,
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 32,
-                marginTop: 8,
-                marginBottom: 8,
-                backgroundColor: "#fafafa",
-              }}
-              onPress={pickImage}
-              disabled={uploading}
-            >
-              {uploading ? (
-                <ActivityIndicator size="small" color="#ef4444" />
-              ) : data.bukti_pembayaran_url ? (
-                <Image
-                  source={{ uri: data.bukti_pembayaran_url }}
-                  style={{ width: 120, height: 120, borderRadius: 8, marginBottom: 8 }}
-                  resizeMode="cover"
-                />
-              ) : (
-                <InputImageDnD
-                  onUploadFile={uploadFile}
-                />
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-        <TouchableOpacity
-          onPress={onSubmit}
-          disabled={loading}
-          style={{
-            backgroundColor: "#ef4444",
-            padding: 16,
-            borderRadius: 8,
-            alignItems: "center",
-            marginTop: 16,
-            opacity: loading ? 0.7 : 1,
-          }}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Lanjutkan</Text>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

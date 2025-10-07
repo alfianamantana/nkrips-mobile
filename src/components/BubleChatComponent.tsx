@@ -2,6 +2,8 @@ import { AttachmentType, Message } from "@pn/watch-is/model"
 import { useNavigation } from "@react-navigation/native"
 import { Dimensions, Text, View, TouchableOpacity, Image } from "react-native"
 import Video from "react-native-video"
+import VideoPlayer from 'react-native-video-controls';
+
 import Assets from "../assets"
 import { downloadWithCheckPermissioin } from "../helpers/downloadFile"
 import moment from "moment-timezone"
@@ -99,6 +101,7 @@ const BubbleChat: FC<BubbleChatInterface> = ({
     <View className={`${!isLeft ? "items-end" : "items-start"} w-full my-2 relative`}>
       {replyData && replyData?.is_deleted === false && (
         <TouchableOpacity
+          id="reply-bubble"
           activeOpacity={0.8}
           onPress={() => {
             if (scrollToMessage && replyData.id) {
@@ -107,7 +110,7 @@ const BubbleChat: FC<BubbleChatInterface> = ({
           }}
           className="mb-1 rounded-md px-3 py-2 flex-row items-center"
           style={{
-            backgroundColor: "#F5F5F5",
+            backgroundColor: "#f0f0f0",
             borderLeftWidth: 4,
             borderLeftColor: "#d32f2f",
             maxWidth: screenWidth - 100,
@@ -172,13 +175,7 @@ const BubbleChat: FC<BubbleChatInterface> = ({
                           key={i}
                           className="mb-2 relative items-center justify-center"
                         >
-                          <Video
-                            source={{ uri: attachment.url }}
-                            resizeMode="cover"
-                            className="w-[200px] h-[200px] opacity-20 rounded-md"
-                            paused={true}
-                          />
-
+                          <View className="p-24 bg-gray-200 rounded-md" />
                           <View className="bg-black/20 absolute w-full h-full items-center justify-center">
                             <Assets.IconVideoBlack width={30} height={30} />
                           </View>

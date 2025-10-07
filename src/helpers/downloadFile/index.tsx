@@ -1,58 +1,75 @@
 import { PermissionsAndroid, Platform, ToastAndroid } from "react-native";
 import RNFetchBlob from "rn-fetch-blob";
 
-const actualDownload = (name="", url="") => {
-    const { dirs }  = RNFetchBlob.fs;
-    const dirToSave = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
-    const configfb  = {
-        fileCache: true,
-        addAndroidDownloads : {
-            useDownloadManager  : true,
-            notification        : true,
-            mediaScannable      : true,
-            title               : name,
-            path                : `${dirs.DownloadDir}/${name}`,
-        },
-        useDownloadManager  : true,
-        notification        : true,
-        mediaScannable      : true,
-        title               : name,
-        path                : `${dirToSave}/${name}`,
-    };
+const actualDownload = (name = "", url = "") => {
+    const { dirs } = RNFetchBlob.fs;
+    const androidPath = `${dirs.DownloadDir}/${name}`;
+    const iosPath = `${dirs.DocumentDir}/${name}`;
 
-    const configOptions = Platform.select({
-        ios: configfb,
-        android: configfb,
-    });
-    
-    RNFetchBlob.config(configOptions || {}).fetch('GET', url, {}).then(res => {
-        if (Platform.OS === 'ios') {
-            RNFetchBlob.fs.writeFile(configfb.path, res.data, 'base64');
-            RNFetchBlob.ios.previewDocument(configfb.path);
-        }
-
-        if (Platform.OS === 'android') {
-            ToastAndroid.show("File berhasil di unduh !", ToastAndroid.SHORT)   
-        }
-        
-    }).catch(e => {
-        ToastAndroid.show("File gagal di unduh !", ToastAndroid.SHORT)
-    });
+    if (Platform.OS === 'android') {
+        RNFetchBlob.config({
+            addAndroidDownloads: {
+                useDownloadManager: true,
+                notification: true,
+                mediaScannable: true,
+                title: name,
+                path: androidPath,
+                description: 'Downloading file',
+            },
+        })
+            .fetch('GET', url)
+            .then(res => {
+                ToastAndroid.show('File berhasil di unduh!', ToastAndroid.SHORT);
+            })
+            .catch(err => {
+                console.log('Download error:', err);
+                ToastAndroid.show('File gagal di unduh!', ToastAndroid.SHORT);
+            });
+    } else {
+        // iOS: save to Documents and preview
+        RNFetchBlob.config({ path: iosPath, fileCache: true })
+            .fetch('GET', url)
+            .then(res => {
+                try {
+                    // previewDocument only available on RNFetchBlob.ios
+                    // @ts-ignore
+                    if (RNFetchBlob.ios && RNFetchBlob.ios.previewDocument) {
+                        // @ts-ignore
+                        RNFetchBlob.ios.previewDocument(res.path());
+                    }
+                } catch (e) {
+                    // ignore
+                }
+                ToastAndroid.show('File berhasil di unduh!', ToastAndroid.SHORT);
+            })
+            .catch(err => {
+                console.log('Download error:', err);
+                ToastAndroid.show('File gagal di unduh!', ToastAndroid.SHORT);
+            });
+    }
 };
 
-export const downloadWithCheckPermissioin = async (name="", url="") => {
+export const downloadWithCheckPermissioin = async (name = "", url = "") => {
     try {
-        const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
-        // const grantedManage = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.MANAGE_EXTERNAL_STORAGE)
+        let granted = PermissionsAndroid.RESULTS.DENIED;
+        // For Android 11+ (API 30+) use DownloadManager via rn-fetch-blob which does
+        // not require MANAGE_EXTERNAL_STORAGE. For older versions request WRITE.
+        if (parseInt(Platform.Version as string, 10) >= 30) {
+            // Directly perform download using DownloadManager; no runtime permission needed in most cases
+            actualDownload(name, url);
+            return;
+        } else {
+            // For older Android versions request WRITE_EXTERNAL_STORAGE at runtime
+            granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+        }
 
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
             actualDownload(name, url);
-
         } else {
-            ToastAndroid.show("Izinkan akses penyimpanan !", ToastAndroid.SHORT)
+            ToastAndroid.show("Storage permission is required to download files!", ToastAndroid.SHORT);
         }
-
     } catch (err) {
-        console.log("display error",err)    
+        console.log("Error requesting permission:", err);
+        ToastAndroid.show("Failed to request permission!", ToastAndroid.SHORT);
     }
 };
