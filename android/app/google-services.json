@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:732791260413:android:a163943f05f5455da8aa94",
         "android_client_info": {
-          "package_name": "com.nkrips_app_rev1"
+          "package_name": "com.nkrips_app_rev2"
         }
       },
       "oauth_client": [],
@@ -28,7 +28,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:732791260413:android:8fdcbee2bb813ef0a8aa94",
         "android_client_info": {
-          "package_name": "com.nkrips_app_rev1.android"
+          "package_name": "com.nkrips_app_rev2.android"
         }
       },
       "oauth_client": [],

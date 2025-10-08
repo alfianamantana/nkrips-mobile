@@ -133,6 +133,7 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
       await editMessageRequest(public_hash, editMessage.message.id, editText);
       ToastAndroid.show("Pesan berhasil diedit!", ToastAndroid.SHORT);
       setEditMessage(null);
+      setShowEditModal(false)
       setText("");
       setIsEditing(false);
       listChat();
@@ -202,8 +203,7 @@ const DetailChat: FC<DetailChatInterface> = ({ navigation, route }) => {
 
     } catch (error) {
       Logout(error, navigation)
-      ToastAndroid.show("Gagal mengambil daftar pesan !", ToastAndroid.SHORT)
-
+      // ToastAndroid.show(error.response.data, ToastAndroid.SHORT)
     } finally {
       setLoading(false)
     }

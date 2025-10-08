@@ -1,4 +1,4 @@
-package com.nkrips_app_rev1
+package com.nkrips_app_rev2
 
 import android.app.Application
 import com.facebook.react.PackageList

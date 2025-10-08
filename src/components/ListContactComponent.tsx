@@ -47,7 +47,7 @@ const ListContact: FC<ListContactInterface> = ({ item, showCheckbox, pressCheckB
                 overflow: "hidden",
               }}
             >
-              <Image source={Assets.ImageNkrips} style={{ width: 45, height: 45 }} />
+              <Image source={Assets.ImageNkrips} style={{ width: 55, height: 55 }} />
             </View>
         }
       </View>

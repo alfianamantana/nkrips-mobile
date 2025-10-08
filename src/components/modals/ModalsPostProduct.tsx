@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Platform, ToastAndroid, ScrollView, Image } from "react-native"
+import { View, Text, TouchableOpacity, Platform, ToastAndroid, ScrollView, Image, TextInput, KeyboardAvoidingView } from "react-native"
 import { Component, FC, useEffect, useState } from "react"
 import Button from "../button"
 import Assets from "../../assets"
@@ -145,129 +145,141 @@ const ModalsPostProduct: FC<ModalsPostProductInterface> = ({ isShow, handleClose
 
   return (
     <Components.ModalContainerBottom isShow={isShow} handleClose={handleShowHideModals} isFullWidth={true} isBottom={true}>
-      <View className="px-2 pt-4 pb-1 h-[70vh]">
+      <View className="px-2 pt-4 h-[50vh]">
         <View className="flex-1">
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View className="my-2">
-              <Components.FormInput
-                label="Nama Produk"
-                placeholder="Masukan nama produk"
-                onChange={setnamaProduk}
-                value={namaProduk}
-              />
-            </View>
-            <View className="my-2">
-              <View>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 150 : 0} style={{ flex: 1 }}>
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              <View className="my-2">
+                <Text className="text-sm text-black font-satoshi">Nama Produk</Text>
+                <TextInput
+                  className="w-full border border-gray-200 rounded-lg mt-2 px-4 font-satoshi text-black"
+                  placeholder="Masukan nama produk"
+                  placeholderTextColor="#757575"
+                  value={namaProduk}
+                  onChangeText={setnamaProduk}
+                />
+              </View>
+              <View className="my-2">
                 <View>
-                  <Text className="text-sm text-black font-satoshi">Tambahkan foto produk</Text>
-                </View>
-                <View className="mt-4">
-                  <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-                    <View className="flex-row items-center">
-                      {
-                        selectedPhoto.length > 0 &&
-                        selectedPhoto.map((img, i) => (
-                          <View key={i} className="w-[100px] h-[100px] items-center border border-Neutral/40 rounded-lg mr-2 relative">
-                            <Image source={{ uri: img.image_url }} resizeMode="cover" width={100} height={100} className="rounded-lg" />
+                  <View>
+                    <Text className="text-sm text-black font-satoshi">Tambahkan foto produk</Text>
+                  </View>
+                  <View className="mt-4">
+                    <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+                      <View className="flex-row items-center">
+                        {
+                          selectedPhoto.length > 0 &&
+                          selectedPhoto.map((img, i) => (
+                            <View key={i} className="w-[100px] h-[100px] items-center border border-Neutral/40 rounded-lg mr-2 relative">
+                              <Image source={{ uri: img.image_url }} resizeMode="cover" width={100} height={100} className="rounded-lg" />
 
-                            <TouchableOpacity onPress={() => deleteImageList(img.image_url)} className="bg-Neutral/90/70 absolute top-0 left-0 h-[100px] w-[100px] items-center justify-center rounded-lg">
-                              <Assets.IconTrashRed width={20} height={20} />
-                            </TouchableOpacity>
+                              <TouchableOpacity onPress={() => deleteImageList(img.image_url)} className="bg-Neutral/90/70 absolute top-0 left-0 h-[100px] w-[100px] items-center justify-center rounded-lg">
+                                <Assets.IconTrashRed width={20} height={20} />
+                              </TouchableOpacity>
+                            </View>
+                          ))
+                        }
+
+                        <TouchableOpacity onPress={() => setShowSelectImage(true)} className="w-[100px] h-[100px] items-center justify-center border border-Neutral/40 rounded-lg p-3 mr-2">
+                          <View>
+                            <Assets.IconGallery width={25} height={25} />
                           </View>
-                        ))
-                      }
-
-                      <TouchableOpacity onPress={() => setShowSelectImage(true)} className="w-[100px] h-[100px] items-center justify-center border border-Neutral/40 rounded-lg p-3 mr-2">
-                        <View>
-                          <Assets.IconGallery width={25} height={25} />
-                        </View>
-                        <View className="mt-2">
-                          <Text className="text-xs text-Neutral/90 font-satoshi">
-                            Pilih Foto
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    </View>
-                  </ScrollView>
+                          <View className="mt-2">
+                            <Text className="text-xs text-Neutral/90 font-satoshi">
+                              Pilih Foto
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      </View>
+                    </ScrollView>
+                  </View>
                 </View>
               </View>
-            </View>
-            <View className="my-2">
-              <Components.FormInput
-                label="Kategori"
-                placeholder="Pilih kategori"
-                onChange={setkategori}
-                value={selectedCategory.label}
-                sufix={
+              <View className="my-2">
+                <Text className="text-sm text-black font-satoshi">Kategori</Text>
+                <TouchableOpacity onPress={() => setShowSelectCategory(!showSelectCategory)} className="w-full border border-gray-200 rounded-lg mt-2 px-4 py-3 flex-row items-center bg-gray-100">
+                  <TextInput
+                    className="flex-1 font-satoshi text-black bg-gray-100"
+                    placeholder="Pilih kategori"
+                    placeholderTextColor="#757575"
+                    value={selectedCategory.label}
+                    onChangeText={setkategori}
+                    editable={false}
+                  />
                   <View className={`${!showSelectCategory ? "-rotate-90" : "rotate-90"}`}>
                     <Assets.IconArrowBack width={20} height={20} />
                   </View>
-                }
-                onPres={() => {
-                  setShowSelectCategory(!showSelectCategory)
-                }}
-              />
-            </View>
-            <View className="my-2">
-              <Components.FormInput
-                label="Jenis"
-                placeholder="Pilih Jenis"
-                onChange={setjenis}
-                value={selectedJenis.label}
-                sufix={
+                </TouchableOpacity>
+              </View>
+              <View className="my-2">
+                <Text className="text-sm text-black font-satoshi">Jenis</Text>
+                <TouchableOpacity onPress={() => setShowSelectJenis(!showSelectJenis)} className="w-full border border-gray-200 rounded-lg mt-2 px-4 py-3 flex-row items-center bg-gray-100">
+                  <TextInput
+                    className="flex-1 font-satoshi text-black bg-gray-100"
+                    placeholder="Pilih Jenis"
+                    placeholderTextColor="#757575"
+                    value={selectedJenis.label}
+                    onChangeText={setjenis}
+                    editable={false}
+                  />
                   <View className={`${!showSelectJenis ? "-rotate-90" : "rotate-90"}`}>
                     <Assets.IconArrowBack width={20} height={20} />
                   </View>
-                }
-                onPres={() => {
-                  setShowSelectJenis(!showSelectJenis)
-                }}
-              />
-            </View>
-            <View className="my-2">
-              <Components.FormInput
-                label="Deskripsi"
-                isMultiLine={true}
-                placeholder="Masukan deskripsi"
-                onChange={setdesc}
-                value={desc}
-              />
-            </View>
-            <View className="my-2">
-              <Components.FormInput
-                label="Harga"
-                inputType="number"
-                placeholder="Masukan harga"
-                onChange={setprice}
-                value={price}
-              />
-            </View>
-            <View className="my-2">
-              <Components.FormInput
-                label="Lokasi"
-                placeholder="Masukan lokasi"
-                onChange={setlocation}
-                value={location}
-              />
-            </View>
-            <View className="my-2">
-              <Components.FormInput
-                label="Kuantitas"
-                inputType="number"
-                keyboardType="numeric"
-                placeholder="Masukan kuantitas"
-                onChange={setkuantitas}
-                value={kuantitas}
-              />
-            </View>
-            <View className="mt-5">
-              <Button
-                loading={loading}
-                label="Posting"
-                onPress={postProduct}
-              />
-            </View>
-          </ScrollView>
+                </TouchableOpacity>
+              </View>
+              <View className="my-2">
+                <Text className="text-sm text-black font-satoshi">Deskripsi</Text>
+                <TextInput
+                  className="w-full border border-gray-200 rounded-lg mt-2 px-4 font-satoshi text-black"
+                  placeholder="Masukan deskripsi"
+                  placeholderTextColor="#757575"
+                  value={desc}
+                  onChangeText={setdesc}
+                  multiline={true}
+                  style={{ minHeight: 48, maxHeight: 100 }}
+                />
+              </View>
+              <View className="my-2">
+                <Text className="text-sm text-black font-satoshi">Harga</Text>
+                <TextInput
+                  className="w-full border border-gray-200 rounded-lg mt-2 px-4 font-satoshi text-black"
+                  placeholder="Masukan harga"
+                  placeholderTextColor="#757575"
+                  keyboardType="number-pad"
+                  value={price}
+                  onChangeText={setprice}
+                />
+              </View>
+              <View className="my-2">
+                <Text className="text-sm text-black font-satoshi">Lokasi</Text>
+                <TextInput
+                  className="w-full border border-gray-200 rounded-lg mt-2 px-4 font-satoshi text-black"
+                  placeholder="Masukan lokasi"
+                  placeholderTextColor="#757575"
+                  value={location}
+                  onChangeText={setlocation}
+                />
+              </View>
+              <View className="my-2">
+                <Text className="text-sm text-black font-satoshi">Kuantitas</Text>
+                <TextInput
+                  className="w-full border border-gray-200 rounded-lg mt-2 px-4 font-satoshi text-black"
+                  placeholder="Masukan kuantitas"
+                  placeholderTextColor="#757575"
+                  keyboardType="numeric"
+                  value={kuantitas}
+                  onChangeText={setkuantitas}
+                />
+              </View>
+              <View className="mt-5">
+                <Button
+                  loading={loading}
+                  label="Posting"
+                  onPress={postProduct}
+                />
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </View>
       </View>
 

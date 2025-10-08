@@ -77,13 +77,13 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.nkrips_app_rev1"
+    namespace "com.nkrips_app_rev2"
     defaultConfig {
-        applicationId "com.nkrips_app_rev1"
+        applicationId "com.nkrips_app_rev2"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 101
-        versionName "1.0.1"
+        versionCode 102
+        versionName "1.0.2"
     }
     signingConfigs {
         debug {

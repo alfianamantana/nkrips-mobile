@@ -5,7 +5,6 @@ import Assets from "../../assets"
 import { listPostingRequest, postingRequest } from "../../services/home/posting"
 import { Schema } from "@pn/watch-is/driver"
 import { useFocusEffect } from "@react-navigation/native"
-import { storeShowModalsComment } from "../../store"
 import { PostingType } from "@pn/watch-is/model"
 import { myProfileRequest } from "../../services/home/profile"
 import { UserSummaryResponse } from "../../constants/interface"
@@ -26,7 +25,8 @@ const Feed: FC<FeedInterface> = ({ navigation, route }) => {
   const [showPostImage, setShowPostImage] = useState(false)
   const [showPostVideo, setShowPostVideo] = useState(false)
   const [showPostProduct, setShowPostProduct] = useState(false)
-  const { showModalsComment, setShowModalsComment } = storeShowModalsComment()
+  const [showModalComment, setShowModalComment] = useState(false)
+  const [hashComment, setHashComment] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [isEndPage, setIsEndPage] = useState(false)
   const [showBanner, setShowBanner] = useState(false)
@@ -169,6 +169,11 @@ const Feed: FC<FeedInterface> = ({ navigation, route }) => {
     listPost(plusOnePage, true)
   }
 
+  const openModalComment = (hash: string) => {
+    setHashComment(hash)
+    setShowModalComment(true)
+  }
+
   useFocusEffect(
     useCallback(() => {
 
@@ -191,7 +196,9 @@ const Feed: FC<FeedInterface> = ({ navigation, route }) => {
           {
             (type === "") && (
               <View className="flex-row items-center">
-                <View className="flex-1">
+                <View className="flex-1"
+                  id="input-posting"
+                >
                   <Components.FormInput
                     customHeight={45}
                     isBackground={true}
@@ -310,6 +317,7 @@ const Feed: FC<FeedInterface> = ({ navigation, route }) => {
                       key={index}
                       dataPost={item}
                       listPost={listPost}
+                      onPressComment={openModalComment}
                     />
                   )
                 }}
@@ -348,11 +356,9 @@ const Feed: FC<FeedInterface> = ({ navigation, route }) => {
       />
 
       <Components.ModalsComment
-        isShow={showModalsComment.status}
-        hash={showModalsComment.hash}
-        handleClose={(value: boolean) => {
-          setShowModalsComment("", value)
-        }}
+        isShow={showModalComment}
+        hash={hashComment}
+        handleClose={setShowModalComment}
       />
     </View>
   )

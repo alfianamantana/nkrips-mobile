@@ -65,9 +65,10 @@ moment.updateLocale('en', {
 interface ListPostInterface {
   dataPost: Posting
   listPost: () => void
+  onPressComment?: (hash: string) => void
 }
 
-const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
+const ListPost: FC<ListPostInterface> = ({ dataPost, listPost, onPressComment }) => {
   const navigation = useNavigation<PostProfileNavigationProp>()
   const [vote, setVote] = useState({ "downvote": 0, "upvote": 0 })
   const { showModalsComment, setShowModalsComment } = storeShowModalsComment()
@@ -458,7 +459,7 @@ const ListPost: FC<ListPostInterface> = ({ dataPost, listPost }) => {
           </View>
         </View>
 
-        <TouchableOpacity id="comment-button" disabled={showModalsComment.status} onPress={() => setShowModalsComment(dataPost?.posting?.hash, true)} className="flex-1 flex-row items-center justify-end">
+        <TouchableOpacity id="comment-button" disabled={showModalsComment.status} onPress={() => onPressComment ? onPressComment(dataPost?.posting?.hash) : setShowModalsComment(dataPost?.posting?.hash, true)} className="flex-1 flex-row items-center justify-end">
           <View>
             <Text className="font-satoshi text-gray-600 text-xs">{dataPost?.list_comment?.length} Komentar</Text>
           </View>
